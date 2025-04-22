@@ -1,0 +1,18 @@
+#pragma once
+
+#include <communication/broadcaster.h>
+
+namespace core
+{
+    class IComponent
+    {
+    public:
+        virtual ~IComponent() { m_Broadcaster = nullptr; };
+
+        virtual void init(core::Broadcaster&) = 0;
+        virtual void update() = 0;
+
+    protected:
+        core::Broadcaster* m_Broadcaster;
+    };
+}
