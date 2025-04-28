@@ -1,5 +1,8 @@
 #include <common/iapplication.h>
-#include <common/icomponent.h>
+#include "uicomponent.h"
+#include "networkcomponent.h"
+
+// for now: ui starts everything and network just listens to msgs to act
 
 class ClientApplication : public core::IApplication
 {
@@ -8,8 +11,10 @@ public:
 
 	void init() override;
 	void run() override;
-	void addComponent(core::IComponent&) override;
 
 private:
+	UIComponent m_UIComp;
+	NetworkComponent m_NetworkComp;
+
 	core::Broadcaster m_Broadcaster;
 };

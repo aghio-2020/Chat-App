@@ -9,7 +9,7 @@ namespace core
     public:
         virtual ~IComponent() { m_Broadcaster = nullptr; };
 
-        virtual void init(core::Broadcaster&) = 0;
+        virtual void init() = 0;
         virtual void update() = 0;
 
     protected:

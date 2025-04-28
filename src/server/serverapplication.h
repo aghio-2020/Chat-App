@@ -8,7 +8,6 @@ public:
 
 	void init() override;
 	void run() override;
-	void addComponent(core::IComponent&) override;
 
 private:
 

@@ -11,9 +11,8 @@ namespace core
 
         virtual void init() = 0;
         virtual void run() = 0;
-        virtual void addComponent(IComponent&) = 0;
 
     protected:
-        std::vector<IComponent> m_Components;
+        core::Broadcaster m_Broadcaster;
     };
 }
