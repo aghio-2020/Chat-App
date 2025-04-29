@@ -17,21 +17,15 @@ namespace core
         TEST_EVENT,
     };
     
-    struct Event
+
+    struct ApplicationEvent
     {
-        virtual ~Event() {};
+    public:
+        virtual ~ApplicationEvent() = default;
+
         EventType getEventType() const { return type; }
+
     protected:
         EventType type = EventType::NONE;
-    };
-
-    struct TestEvent : public Event
-    {
-        TestEvent(int dat) : data(dat)    
-        { 
-            type = TEST_EVENT; 
-        }
-
-        int data = 0;
     };
 }

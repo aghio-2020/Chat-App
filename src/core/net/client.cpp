@@ -36,13 +36,16 @@ namespace core
 		m_ServerHost->closeConnection();
 	}
 
-	void Client::sendMessage(Message msg)
+	void Client::sendMessage(messages::Message const& msg)
 	{
-
+		if (isConnectedToServer())
+		{
+			m_ServerHost->sendMessage(msg);
+		}
 	}
 
-	void Client::readMessage(Message msg)
+	bool Client::isConnectedToServer()
 	{
-
+		return m_ServerHost->isConnected();
 	}
 }

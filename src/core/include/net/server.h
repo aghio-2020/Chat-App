@@ -1,6 +1,7 @@
 #include <boost/asio.hpp>
 
 #include <net/host.h>
+#include <net/message.h>
 
 #include <string>
 #include <vector>
@@ -21,8 +22,8 @@ namespace core
 		void shutdown();
 
 		void listenForConnection();
-		void sendMessage();
-		void broadcastMessage();
+		void sendMessageToClient(messages::Message const& msg, std::unique_ptr<Host>& host);
+		void broadcastMessageToClients(messages::Message const& msg);
 
 	private:
 		// TODO: add some sort of id to iterate over hosts
@@ -31,6 +32,7 @@ namespace core
 		asio::ip::tcp::acceptor m_Acceptor;
 		asio::io_context m_IOContext;
 		std::thread m_CtxThread;
+
 		std::vector<std::unique_ptr<Host>> m_Hosts;
 	};
 }

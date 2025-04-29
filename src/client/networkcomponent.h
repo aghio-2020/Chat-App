@@ -5,7 +5,7 @@
 #include <net/client.h>
 
 class NetworkComponent : 
-	public core::IComponent, core::Client
+	public core::IComponent
 {
 public:
 	NetworkComponent(core::Broadcaster& broadcaster);
@@ -14,5 +14,5 @@ public:
 	void update() override;
 
 private:
-
+	core::Client m_Client;
 };

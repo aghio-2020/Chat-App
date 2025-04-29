@@ -15,12 +15,18 @@ namespace core
 	void Server::run()
 	{
 		listenForConnection();
+		// start ctx thread after we create a async listen loop
+		// so that the ctx always has something to do and doesnt die
 		m_CtxThread = std::thread([this]() { m_IOContext.run(); });
 	}
 
 	void Server::shutdown()
 	{
-
+		for (auto& host : m_Hosts)
+		{
+			// COULD: send a shutdown message before closing connections
+			host->closeConnection();
+		}
 	}
 
 	void Server::listenForConnection()
@@ -41,18 +47,19 @@ namespace core
 			});
 	}
 
-	void Server::sendMessage()
+	void Server::sendMessageToClient(messages::Message const& msg, std::unique_ptr<Host>& host)
 	{
-		
+		if (host->isConnected())
+		{
+			host->sendMessage(msg);
+		}
 	}
 
-	void Server::broadcastMessage()
+	void Server::broadcastMessageToClients(messages::Message const& msg)
 	{
-
-	}
-
-	void Server::disconnectHost(std::unique_ptr<Host>& host)
-	{
-		host->closeConnection();
+		for (auto& host : m_Hosts)
+		{
+			sendMessageToClient(msg, host);
+		}
 	}
 }

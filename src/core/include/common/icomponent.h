@@ -7,12 +7,12 @@ namespace core
     class IComponent
     {
     public:
-        virtual ~IComponent() { m_Broadcaster = nullptr; };
+        virtual ~IComponent() { m_Broadcaster = nullptr; }
 
         virtual void init() = 0;
         virtual void update() = 0;
 
     protected:
-        core::Broadcaster* m_Broadcaster;
+        Broadcaster* m_Broadcaster;
     };
 }

@@ -2,6 +2,7 @@
 
 UIComponent::UIComponent(core::Broadcaster& broadcaster)
 {
+	m_Broadcaster = &broadcaster;
 }
 
 void UIComponent::init()

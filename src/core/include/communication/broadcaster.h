@@ -1,12 +1,12 @@
 #pragma once
 
-#include "events.h"
+#include "applicationevents.h"
 #include <functional>
 #include <map>
 
 namespace core
 {
-    using EventCallback = std::function<void(Event const&)>;
+    using EventCallback = std::function<void(ApplicationEvent const&)>;
 
     class Broadcaster
     {
@@ -14,7 +14,7 @@ namespace core
         Broadcaster();
 
         void subscribeToEvent(EventType eventType, EventCallback const& callback);
-        void pushEvent(Event const& event);
+        void pushEvent(ApplicationEvent const& event);
     
     private:
         std::map<EventType, std::vector<EventCallback>> m_CallbacksMap;

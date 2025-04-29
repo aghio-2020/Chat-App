@@ -19,18 +19,17 @@ namespace core
 		}
 	}
 
-	void Broadcaster::pushEvent(Event const& event)
+	void Broadcaster::pushEvent(ApplicationEvent const& event)
 	{
 		std::lock_guard<std::mutex> lock(g_Mutex);
 
 		auto eventCallbacks = m_CallbacksMap.find(event.getEventType());
-		if (eventCallbacks == m_CallbacksMap.end())
+		if (eventCallbacks != m_CallbacksMap.end())
 		{
-			return;
-		}
-		for (auto cb : eventCallbacks->second)
-		{
-			cb(event);
+			for (auto cb : eventCallbacks->second)
+			{
+				cb(event);
+			}
 		}
 	}
 }

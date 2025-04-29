@@ -3,6 +3,7 @@
 #include <boost/asio.hpp>
 
 #include <net/message.h>
+#include <common/threadsafequeue.h>
 
 #include <vector>
 #include <memory>
@@ -20,16 +21,22 @@ namespace core
 		~Host();
 
 		void connect(asio::ip::tcp::resolver::results_type const& endpoints);
-		void sendMessage(Message msg);
-		void readMessage();
+		void sendMessage(messages::Message const& msg);
 		void closeConnection();
 		bool isConnected() const;
 
 	private:
+		void readMessageHeader();
+		void readMessageBody();
+		void writeMessageHeader();
+		void writeMessageBody();
+
 		asio::io_context* m_IOContext;
 		asio::ip::tcp::socket m_Socket;
 
-		Message m_ReadMsg;
-		Message m_SentMsg;
+		utils::TSQueue<messages::Message> m_MessageWriteQueue;
+		utils::TSQueue<messages::Message> m_MessageReadQueue;
+
+		bool m_Connected = false;
 	};
 }

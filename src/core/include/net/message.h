@@ -1,4 +1,4 @@
-#include <string>
+#include <vector>
 
 // TODO: 
 // add MessageHeader with size and Message with header and byte data
@@ -8,48 +8,61 @@
 // add separate MessageSerializer class and here just define the generic message
 // add an id to header to differenciate simpler messages without any needed json
 
-namespace core
+namespace core::messages
 {
-    template <typename Category>
-    class MessageHeader
+    enum Category : uint32_t
     {
-        Category id;
-        uint32_t size;
+        NOTIFICATION,
+        CHAT_MESSAGE,
+    };
+
+    // header will have to be of a constant size, with basic types and no buffers
+    struct MessageHeader
+    {
+        Category category;
+        uint64_t size;
     };
 
     struct Message
     {
-        void* data;
-        // better to use sized ints for portability
-        uint32_t size = sizeof(uin32_t);
+        MessageHeader header;
+        // this will be a json perhaps
+        std::vector<uint8_t> body;
 
-    public:
-        void serialize(char* payload)
+        template <typename T, typename ...Args>
+        friend void addData(T const& data, Args const& ...args)
         {
-            char sizeBytes[sizeof size + 1];
-            sizeBytes[0] = (size >> 24) & 0xFF;
-            sizeBytes[1] = (size >> 16) & 0xFF;
-            sizeBytes[2] = (size >> 8) & 0xFF;
-            sizeBytes[3] = (size) & 0xFF;
-            sizeBytes[4] = '\0';
-
-            realloc(payload, (sizeof sizeBytes) + strlen((char*)body) + 1);
-            strcpy(payload, sizeBytes);
-            strcat(payload, (char*)body);
+            addData(data);
+            addData(args);
         }
 
-        bool deserialize(void* msgBuffer, uint32_t bytes)
+        template <typename T>
+        friend void addData(T const& data)
         {
-            uint32_t sizeOfSize = sizeof size;
-            if (sizeOfSize <= bytes)
-            {
-                return false;
-            }
+            size_t bodySize = body.size();
+            body.resize(body.size() + sizeof(T));
+            // add at the end of buffer
+            std::memcpy(body.data() + bodySize, &data, sizeof(T));
+            // update size in header
+            header.size = body.size();
+        }
 
-            char* buffer = (char*)msgBuffer;
-            memcpy(&size, buffer, sizeOfSize);
-            memcpy(&data, (char*)msgBuffer + sizeOfSize, bytes - sizeOfSize);
-            return true;
+        template <typename T, typename ...Args>
+        friend void retrieveData(T& data, Args& ...args)
+        {
+            retrieveData(data);
+            retrieveData(args);
+        }
+
+        template <typename T>
+        friend void retrieveData(T&data)
+        {
+            size_t bodySize = body.size() - sizeof(T);
+            // add at the end of buffer
+            std::memcpy(&data, body.data() + bodySize, sizeof(T));
+            body.resize(bodySize);
+            // update size in header
+            header.size = body.size();
         }
     };
 }
