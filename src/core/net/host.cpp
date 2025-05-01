@@ -3,6 +3,11 @@
 #include <type_traits>
 #include <iostream>
 
+void log(std::string const& text)
+{
+	std::cout << text << std::endl;
+}
+
 namespace core
 {
 using namespace boost;
@@ -30,22 +35,30 @@ void Host::connect(asio::ip::tcp::resolver::results_type const& endpoints)
 			{
 				return;
 			}
-			m_Connected = true;
 			// start awaiting for messages async
-			readMessageHeader();
+			onConnectionAccepted();
 		});
+}
+
+void Host::onConnectionAccepted()
+{
+	if (!isConnected())
+	{
+		m_Connected = true;
+		readMessageHeader();
+	}
 }
 
 void Host::readMessageHeader()
 {
 	messages::Message msg;
-	m_MessageReadQueue.push_back(msg);
-	m_Socket.async_read_some(asio::buffer(&m_MessageReadQueue.front().header, sizeof messages::MessageHeader),
+	m_MessageReadQueue.push(msg);
+	m_Socket.async_read_some(asio::buffer(&m_MessageReadQueue.front().header, sizeof(messages::MessageHeader)),
 		[this](boost::system::error_code errorCode, std::size_t bytes)
 		{
 			if (!errorCode)
 			{
-				if (bytes < sizeof messages::MessageHeader)
+				if (bytes < sizeof(messages::MessageHeader))
 				{
 					// TODO: handle case
 				}
@@ -90,7 +103,7 @@ void Host::sendMessage(messages::Message const& msg)
 	asio::post(*m_IOContext,
 		[this, msg]()
 		{
-			m_MessageWriteQueue.push_back(msg);
+			m_MessageWriteQueue.push(msg);
 			if (m_MessageWriteQueue.empty())
 			{
 				writeMessageHeader();
@@ -101,12 +114,12 @@ void Host::sendMessage(messages::Message const& msg)
 void Host::writeMessageHeader()
 {
 	// you can pass a memory location to void* with & as well
-	m_Socket.async_write_some(asio::buffer(&m_MessageWriteQueue.front().header, sizeof messages::MessageHeader),
+	m_Socket.async_write_some(asio::buffer(&m_MessageWriteQueue.front().header, sizeof(messages::MessageHeader)),
 		[this](boost::system::error_code errorCode, std::size_t bytes)
 		{
 			if (!errorCode)
 			{
-				if (bytes < sizeof messages::MessageHeader)
+				if (bytes < sizeof(messages::MessageHeader))
 				{
 					// TODO: handle case
 				}
@@ -116,7 +129,7 @@ void Host::writeMessageHeader()
 				}
 				else
 				{
-					m_MessageWriteQueue.pop_front();
+					m_MessageWriteQueue.pop();
 
 					if (!m_MessageWriteQueue.empty())
 					{
@@ -134,7 +147,7 @@ void Host::writeMessageHeader()
 
 void Host::writeMessageBody()
 {
-	m_Socket.async_write_some(asio::buffer(&m_MessageWriteQueue.front().body, sizeof m_MessageWriteQueue.front().body.size()),
+	m_Socket.async_write_some(asio::buffer(&m_MessageWriteQueue.front().body, m_MessageWriteQueue.front().body.size()),
 		[this](boost::system::error_code errorCode, std::size_t bytes)
 		{
 			if (bytes < m_MessageWriteQueue.front().body.size())
@@ -143,7 +156,7 @@ void Host::writeMessageBody()
 			}
 			if (!errorCode)
 			{
-				m_MessageWriteQueue.pop_front();
+				m_MessageWriteQueue.pop();
 
 				if (!m_MessageWriteQueue.empty())
 				{
@@ -159,8 +172,8 @@ void Host::writeMessageBody()
 
 void Host::closeConnection()
 {
-	m_Socket.close();
 	m_Connected = false;
+	m_Socket.close();
 }
 
 bool Host::isConnected() const

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "icomponent.h"
+#include <communication/broadcaster.h>
 
 namespace core
 {
@@ -13,6 +14,6 @@ namespace core
         virtual void run() = 0;
 
     protected:
-        core::Broadcaster m_Broadcaster;
+        Broadcaster m_Broadcaster;
     };
 }

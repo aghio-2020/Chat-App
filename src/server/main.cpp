@@ -1,6 +1,7 @@
+#include <SDKDDKVer.h>
 #include "serverapplication.h"
 
 int main()
 {
-	return 0;
+	ServerApplication app;
 }

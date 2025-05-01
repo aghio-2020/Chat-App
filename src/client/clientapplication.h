@@ -15,6 +15,4 @@ public:
 private:
 	UIComponent m_UIComp;
 	NetworkComponent m_NetworkComp;
-
-	core::Broadcaster m_Broadcaster;
 };

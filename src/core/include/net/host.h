@@ -21,6 +21,7 @@ namespace core
 		~Host();
 
 		void connect(asio::ip::tcp::resolver::results_type const& endpoints);
+		void onConnectionAccepted();
 		void sendMessage(messages::Message const& msg);
 		void closeConnection();
 		bool isConnected() const;

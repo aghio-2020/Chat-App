@@ -2,6 +2,13 @@
 
 #include <common/icomponent.h>
 #include <communication/broadcaster.h>
+#include <string>
+#include <vector>
+
+struct ChatMsg
+{
+	std::string text;
+};
 
 class UIComponent : public core::IComponent
 {
@@ -12,4 +19,5 @@ public:
 	void update() override;
 
 private:
+	std::vector<ChatMsg> m_MessagesInChat;
 };

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <queue>
 #include <mutex>
 
@@ -7,19 +9,19 @@ namespace core::utils
 	class TSQueue
 	{
 	public:
-		void push_back(T const& element)
+		void push(T const& element)
 		{
 			std::scoped_lock lock(m_Mutex);
-			m_Queue.push_back(element);
+			m_Queue.push(element);
 		}
 
-		T pop_front()
+		void pop()
 		{
 			std::scoped_lock lock(m_Mutex);
-			return m_Queue.pop_front();
+			m_Queue.pop();
 		}
 
-		T& front() const
+		T& front()
 		{
 			std::scoped_lock lock(m_Mutex);
 			return m_Queue.front();
@@ -31,8 +33,15 @@ namespace core::utils
 			return m_Queue.empty();
 		}
 
+		std::size_t size() const
+		{
+			std::scoped_lock lock(m_Mutex);
+			return m_Queue.size();
+		}
+
 	private:
 		std::queue<T> m_Queue;
-		std::mutex m_Mutex;
+		// make mutable to avoid breaking the const functions
+		mutable std::mutex m_Mutex;
 	};
 }

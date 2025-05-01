@@ -1,10 +1,12 @@
 #include "clientapplication.h"
 
 ClientApplication::ClientApplication()
-	: m_Broadcaster()
+	: IApplication()
 	, m_UIComp(m_Broadcaster)
 	, m_NetworkComp(m_Broadcaster)
 {
+	init();
+	run();
 }
 
 void ClientApplication::init()

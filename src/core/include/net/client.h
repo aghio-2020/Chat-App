@@ -19,7 +19,7 @@ namespace core
 		void connectToServer(std::string const& addr, std::string const& port);
 		void disconnectFromServer();
 		void sendMessage(messages::Message const& msg);
-		bool isConnectedToServer();
+		bool isConnectedToServer() const;
 
 	private:
 		asio::io_context m_IOContext;
