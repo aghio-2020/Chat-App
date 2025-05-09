@@ -1,4 +1,5 @@
 #include <net/host.h>
+#include <boost/system/errc.hpp>
 
 #include <type_traits>
 #include <iostream>
@@ -14,16 +15,17 @@ using namespace boost;
 
 // TODO: have a map with callbacks to call on certain events
 
-Host::Host(asio::ip::tcp::socket&& socket, asio::io_context& ioContext)
+Host::Host(asio::ip::tcp::socket&& socket, asio::io_context& ioContext, HostRelay& eventRelay, uint32_t id)
 	: m_Socket(std::move(socket))
+	, m_IOContext(ioContext)
+	, m_EventRelay(eventRelay)
+	, m_HostID(id)
 {
-	m_IOContext = &ioContext;
 }
 
 Host::~Host()
 {
 	closeConnection();
-	m_IOContext = nullptr;
 }
 
 void Host::connect(asio::ip::tcp::resolver::results_type const& endpoints)
@@ -31,31 +33,40 @@ void Host::connect(asio::ip::tcp::resolver::results_type const& endpoints)
 	asio::async_connect(m_Socket, endpoints,
 		[this](boost::system::error_code errorCode, asio::ip::tcp::endpoint)
 		{
+			std::cout << "client connected\n";
 			if (errorCode)
 			{
 				return;
 			}
 			// start awaiting for messages async
-			onConnectionAccepted();
+			onConnectionEstablished();
 		});
 }
 
-void Host::onConnectionAccepted()
+void Host::onConnectionEstablished()
 {
 	if (!isConnected())
 	{
 		m_Connected = true;
 		readMessageHeader();
+
+		m_EventRelay.getRelay().onHostConnection(m_HostID);
 	}
+}
+
+uint32_t Host::getID() const
+{
+	return m_HostID;
 }
 
 void Host::readMessageHeader()
 {
 	messages::Message msg;
-	m_MessageReadQueue.push(msg);
+	m_MessageReadQueue.push_back(msg);
 	m_Socket.async_read_some(asio::buffer(&m_MessageReadQueue.front().header, sizeof(messages::MessageHeader)),
 		[this](boost::system::error_code errorCode, std::size_t bytes)
 		{
+			std::cout << "message read\n";
 			if (!errorCode)
 			{
 				if (bytes < sizeof(messages::MessageHeader))
@@ -68,7 +79,10 @@ void Host::readMessageHeader()
 				}
 				else
 				{
-					readMessageHeader();	
+					m_EventRelay.getRelay().onMessageReceived(getID(), m_MessageReadQueue.front());
+
+					m_MessageReadQueue.pop();
+					readMessageHeader();
 				}
 			}
 			else
@@ -89,10 +103,16 @@ void Host::readMessageBody()
 				{
 					// TODO: handle case
 				}
+
+				m_EventRelay.getRelay().onMessageReceived(getID(), m_MessageReadQueue.front());
+
+				// start listening for new messages
+				m_MessageReadQueue.pop();
 				readMessageHeader();
 			}
 			else
 			{
+				std::cout << errorCode.message();
 				// TODO: handle errors
 			}
 		});
@@ -100,11 +120,11 @@ void Host::readMessageBody()
 
 void Host::sendMessage(messages::Message const& msg)
 {
-	asio::post(*m_IOContext,
+	asio::post(m_IOContext,
 		[this, msg]()
 		{
-			m_MessageWriteQueue.push(msg);
-			if (m_MessageWriteQueue.empty())
+			m_MessageWriteQueue.push_back(msg);
+			if (!m_Writing)
 			{
 				writeMessageHeader();
 			}
@@ -113,10 +133,12 @@ void Host::sendMessage(messages::Message const& msg)
 
 void Host::writeMessageHeader()
 {
+	m_Writing = true;
 	// you can pass a memory location to void* with & as well
 	m_Socket.async_write_some(asio::buffer(&m_MessageWriteQueue.front().header, sizeof(messages::MessageHeader)),
 		[this](boost::system::error_code errorCode, std::size_t bytes)
 		{
+			std::cout << "message written\n";
 			if (!errorCode)
 			{
 				if (bytes < sizeof(messages::MessageHeader))
@@ -135,6 +157,10 @@ void Host::writeMessageHeader()
 					{
 						// start async operation to write the next msg
 						writeMessageHeader();
+					}
+					else
+					{
+						m_Writing = false;
 					}
 				}
 			}
@@ -161,6 +187,10 @@ void Host::writeMessageBody()
 				if (!m_MessageWriteQueue.empty())
 				{
 					writeMessageHeader();
+				}
+				else
+				{
+					m_Writing = false;
 				}
 			}
 			else

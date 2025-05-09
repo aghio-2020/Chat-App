@@ -4,7 +4,7 @@
 #include <functional>
 #include <map>
 
-namespace core
+namespace core::events
 {
     using EventCallback = std::function<void(ApplicationEvent const&)>;
 

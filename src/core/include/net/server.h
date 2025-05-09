@@ -1,6 +1,7 @@
 #include <boost/asio.hpp>
 
 #include <net/host.h>
+#include <communication/eventrelay.h>
 #include <net/message.h>
 
 #include <string>
@@ -16,7 +17,7 @@ namespace core
 
 	using ID = uint32_t;
 
-	class Server
+	class Server : public events::EventRelay<events::HostEvents>
 	{
 	public:
 		Server();
@@ -24,11 +25,13 @@ namespace core
 		void run(uint16_t port);
 		void shutdown();
 		void broadcastMessageToClients(messages::Message const& msg);
+		void broadcastMessageToClientsExcept(uint32_t senderHostID, messages::Message const& msg);
+		void sendMessageToClient(messages::Message const& msg, uint32_t hostID);
 
 	private:
 		void listenForConnection();
 		void sendMessageToClient(messages::Message const& msg, std::unique_ptr<Host>& host);
-		void removeHost(std::unique_ptr<Host>& host);
+		void removeHost(uint32_t hostID);
 
 		// callback functions
 		void onConnectionAccepted(asio::ip::tcp::socket&& socket);
@@ -38,6 +41,6 @@ namespace core
 		asio::io_context m_IOContext;
 		std::thread m_CtxThread;
 
-		std::map<ID, std::unique_ptr<Host>> m_Hosts;
+		std::map<uint32_t, std::unique_ptr<Host>> m_Hosts;
 	};
 }

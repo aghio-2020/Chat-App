@@ -13,6 +13,6 @@ namespace core
         virtual void update() = 0;
 
     protected:
-        Broadcaster* m_Broadcaster;
+        events::Broadcaster* m_Broadcaster;
     };
 }

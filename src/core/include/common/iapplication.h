@@ -14,6 +14,6 @@ namespace core
         virtual void run() = 0;
 
     protected:
-        Broadcaster m_Broadcaster;
+        events::Broadcaster m_Broadcaster;
     };
 }

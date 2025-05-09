@@ -7,7 +7,7 @@
 class ServerComponent : public core::IComponent
 {
 public:
-	ServerComponent(core::Broadcaster& braodcaster);
+	ServerComponent(core::events::Broadcaster& braodcaster);
 
 	void init() override;
 	void update() override;

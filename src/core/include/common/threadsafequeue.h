@@ -9,7 +9,7 @@ namespace core::utils
 	class TSQueue
 	{
 	public:
-		void push(T const& element)
+		void push_back(T const& element)
 		{
 			std::scoped_lock lock(m_Mutex);
 			m_Queue.push(element);

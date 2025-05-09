@@ -24,9 +24,7 @@
 
 namespace core::messages
 {
-
-
-    enum Category : uint32_t
+    enum MessageID : uint32_t
     {
         NOTIFICATION,
         CHAT_MESSAGE,
@@ -35,14 +33,13 @@ namespace core::messages
     // header will have to be of a constant size, with basic types and no buffers
     struct MessageHeader
     {
-        Category category;
+        MessageID id;
         std::size_t size;
     };
 
     struct Message
     {
         MessageHeader header;
-        // this will be a json perhaps
         std::vector<uint8_t> body;
 
     public:
@@ -137,6 +134,48 @@ namespace core::messages
         {
             msg.retrieveBuffer(strValue.data());
             msg.retrieveData(value2, value);
+        }
+    };
+
+    struct MessagePack
+    {
+        virtual ~MessagePack() = default;
+        virtual void serializeInto(Message& msg) const = 0;
+        virtual void deserializeFrom(Message& msg) = 0;
+    };
+
+    struct ChatMessage : public MessagePack
+    {
+        std::string text;
+        std::string username;
+        uint32_t hostID;
+
+        void serializeInto(Message& msg) const override
+        {
+            msg.addBuffer(text.c_str(), text.length() + 1);
+            msg.addBuffer(username.c_str(), username.length() + 1);
+            msg.addData(hostID);
+        }
+        void deserializeFrom(Message& msg) override
+        {
+            msg.retrieveData(hostID);
+            msg.retrieveBuffer(username.data());
+            msg.retrieveBuffer(text.data());
+        }
+    };
+
+    struct ConnectionEstablished : public MessagePack
+    {
+        uint32_t hostID;
+
+        void serializeInto(Message& msg) const override
+        {
+            msg.addData(hostID);
+        }
+
+        void deserializeFrom(Message& msg) override
+        {
+            msg.retrieveData(hostID);
         }
     };
 }

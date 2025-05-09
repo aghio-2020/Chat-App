@@ -9,6 +9,11 @@ namespace core
 	{
 	}
 
+	Client::~Client()
+	{
+		m_CtxThread.join();
+	}
+
 	void Client::connectToServer(std::string const& addr, std::string const& port)
 	{
 		if (m_ServerHost)
@@ -23,16 +28,16 @@ namespace core
 		}
 
 		asio::ip::tcp::resolver resolver(m_IOContext);
-
 		// It has string_view so it might fail if original string is deleted (be carrefour)
 		// Also, consider a way of using async_resolve if necessary
 		auto endpoints = resolver.resolve(addr, port);
 
-		std::cout << "host: " << endpoints.begin()->host_name() << " port: " << endpoints.begin()->service_name() << std::endl;
-
-		m_ServerHost = std::make_unique<Host>(asio::ip::tcp::socket(m_IOContext), m_IOContext);
-
+		m_ServerHost = std::make_unique<Host>(asio::ip::tcp::socket(m_IOContext), m_IOContext, static_cast<events::EventRelay<events::HostEvents>&>(*this));
 		m_ServerHost->connect(endpoints);
+
+		m_CtxThread = std::thread([this]() { m_IOContext.run(); });
+
+		std::cout << "host: " << endpoints.begin()->host_name() << " port: " << endpoints.begin()->service_name() << "\n";
 	}
 
 	void Client::disconnectFromServer()

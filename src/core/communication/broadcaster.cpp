@@ -1,7 +1,7 @@
 #include <communication/broadcaster.h>
 #include <mutex>
 
-namespace core
+namespace core::events
 {
 	std::mutex g_Mutex;
 
@@ -23,7 +23,7 @@ namespace core
 	{
 		std::lock_guard<std::mutex> lock(g_Mutex);
 
-		auto eventCallbacks = m_CallbacksMap.find(event.getEventType());
+		auto eventCallbacks = m_CallbacksMap.find(event.type);
 		if (eventCallbacks != m_CallbacksMap.end())
 		{
 			for (auto cb : eventCallbacks->second)
