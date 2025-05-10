@@ -10,5 +10,9 @@ namespace core::events
     {
     public:
         InternalEvent<ui::utils::ChatMessageInfo const&> onMessagePostedToChat;
+
+        InternalEvent<std::string const&, std::string const&> onServerChosen;
+
+        InternalEvent<> onShouldQuit;
     };
 }

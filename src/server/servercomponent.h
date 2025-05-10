@@ -13,5 +13,9 @@ public:
 	void update() override;
 
 private:
+	void handleMessageReceived(core::messages::Message& msg, const uint32_t senderHostID);
+	void handleChatMessageReceivedFrom(uint32_t senderHostID, core::messages::Message& msg);
+	void handleConnectionEstablishedBy(const uint32_t senderHostID, core::messages::Message& msg);
+
 	core::Server m_Server;
 };

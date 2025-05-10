@@ -5,7 +5,6 @@
 
 namespace core::ui
 {
-	const std::string k_InputHint = "Enter a Message: ";
 	const std::size_t k_MaxInputSize = 256;
 
 	ChatLayout::ChatLayout(events::EventRelay<events::GUIEvents>& eventRelay)
@@ -18,25 +17,23 @@ namespace core::ui
 	{
 		ImGui::BeginChild("Chat");
 
-		auto space = ImGui::GetContentRegionAvail();
-		// section for showing messages
-		ImGui::BeginChild("Messages", ImVec2(space.x, space.y - ImGui::GetFrameHeightWithSpacing()), ImGuiChildFlags_None, ImGuiWindowFlags_HorizontalScrollbar);
+		ImGui::BeginChild("MessagesView", 
+			ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeightWithSpacing()), 
+			ImGuiChildFlags_None, 
+			ImGuiWindowFlags_HorizontalScrollbar);
+
 		for (auto const& msg : m_ChatMessages)
 		{
-			utils::showChatMessageBlock(msg);
+			utils::ShowChatMessageBlock(msg);
 		}
+
 		ImGui::EndChild();
 
-		if (utils::showInputBox("\t", k_InputHint, m_MessageInput))
+		ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
+		if (utils::ShowInputBox("##messagein", "Write something", m_MessageInput, 
+			ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_AlwaysOverwrite))
 		{
-			utils::ChatMessageInfo msgIn{ m_MessageInput.c_str(),
-				"TODO: username", 0, 
-				std::chrono::system_clock::now(), 
-				true };
-			m_MessageInput.clear();
-
-			addMessageToUI(msgIn);
-			m_EventRelay.getRelay().onMessagePostedToChat(msgIn);
+			onMessagePosted();
 		}
 
 		ImGui::EndChild();
@@ -45,5 +42,19 @@ namespace core::ui
 	void ChatLayout::addMessageToUI(utils::ChatMessageInfo const& msg)
 	{
 		m_ChatMessages.emplace_back(msg);
+	}
+
+	void ChatLayout::onMessagePosted()
+	{
+		utils::ChatMessageInfo msgIn{ m_MessageInput.c_str(),
+				"TODO: username", 0,
+				std::chrono::system_clock::now(),
+				true 
+		};
+
+		m_MessageInput.clear();
+
+		addMessageToUI(msgIn);
+		m_EventRelay.getRelay().onMessagePostedToChat(msgIn);
 	}
 }

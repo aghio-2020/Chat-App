@@ -16,6 +16,12 @@ namespace core
 	Server::Server()
 		: m_IOContext()
 	{
+		
+	}
+
+	Server::~Server()
+	{
+		shutdown();
 	}
 
 	void Server::run(uint16_t port)
@@ -35,6 +41,9 @@ namespace core
 			host.second->closeConnection();
 		}
 		m_Hosts.clear();
+
+		if (m_CtxThread.joinable())
+			m_CtxThread.join();
 	}
 
 	void Server::listenForConnection()
@@ -75,7 +84,7 @@ namespace core
 		}
 	}
 
-	void Server::broadcastMessageToClientsExcept(uint32_t senderHostID, messages::Message const& msg)
+	void Server::broadcastMessageToClientsExcept(const uint32_t senderHostID, messages::Message const& msg)
 	{
 		for (auto& host : m_Hosts)
 		{
@@ -87,7 +96,7 @@ namespace core
 		}
 	}
 
-	void Server::sendMessageToClient(messages::Message const& msg, uint32_t hostID)
+	void Server::sendMessageToClient(messages::Message const& msg, const uint32_t hostID)
 	{
 		auto host = m_Hosts.find(hostID);
 		if (host != m_Hosts.end())
@@ -96,7 +105,7 @@ namespace core
 		}
 	}
 
-	void Server::removeHost(uint32_t hostID)
+	void Server::removeHost(const uint32_t hostID)
 	{
 		m_Hosts.erase(hostID);
 	}
@@ -107,8 +116,7 @@ namespace core
 
 		static ID s_IDCount = 1;
 		std::unique_ptr<Host> host = std::make_unique<Host>(std::move(socket), m_IOContext, static_cast<events::EventRelay<events::HostEvents>&>(*this), s_IDCount);
-		host->onConnectionEstablished();
-
-		m_Hosts[s_IDCount++] = (std::move(host));
+		m_Hosts[s_IDCount] = (std::move(host));
+		m_Hosts[s_IDCount++]->onConnectionEstablished();
 	}
 }

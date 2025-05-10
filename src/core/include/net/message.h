@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <vector>
+#include <string>
 
 // TODO: 
 // add MessageHeader with size and Message with header and byte data
@@ -22,12 +23,26 @@
 // TODO: 
 // figure out another implementation without std::vector<uint8_t> as body buffer
 
+
 namespace core::messages
 {
+    #define DEFINE_MESSAGE(name, ...) \
+        struct name : public MessagePack {                      \
+            __VA_ARGS__                                         \
+                                                                \
+            void serializeInto(Message& msg) const override;    \
+            void deserializeFrom(Message& msg) override;        \
+        };
+
+
     enum MessageID : uint32_t
     {
-        NOTIFICATION,
+        CONNECTION_ESTABLISHED,
+        HOST_DATA, // send important data back to a connected host, after receiving username
+        HOST_CONNECTION,
+        HOST_DISCONNECTED,
         CHAT_MESSAGE,
+        NOTIFICATION, // dont use yet
     };
 
     // header will have to be of a constant size, with basic types and no buffers
@@ -44,97 +59,18 @@ namespace core::messages
 
     public:
         template <typename T, typename ...Args>
-        void addData(T const& data, Args const& ...args)
-        {
-            addData(data);
-            addData(args...);
-        }
-
-        // COULD: 
-        // add chunks of data with fixed size everytime we resize and check if the current 
-        // capacity allows adding to the buffer before resizing it
+        void addData(T const& data, Args const& ...args);
         template <typename T>
-        void addData(T const& data)
-        {
-            std::size_t bodySize = body.size();
-            body.resize(body.size() + sizeof(T));
-            // add at the end of buffer
-            std::memcpy(body.data() + bodySize, &data, sizeof(T));
-            // update size in header
-            header.size = body.size();
-        }
-
-        void addBuffer(const void* buffer, std::size_t bufSize)
-        {
-            std::size_t bodySize = body.size();
-            body.resize(body.size() + bufSize);
-            std::memcpy(body.data() + bodySize, buffer, bufSize);
-            header.size = body.size();
-
-            // store size so that the receiver can know the buffer size
-            addData<std::size_t>(bufSize);
-        }
+        void addData(T const& data);
+        void addBuffer(const void* buffer, std::size_t bufSize);
 
         template <typename T, typename ...Args>
-        void retrieveData(T& data, Args& ...args)
-        {
-            retrieveData(data);
-            retrieveData(args...);
-        }
-
+        void retrieveData(T& data, Args& ...args);
         template <typename T>
-        void retrieveData(T& data)
-        {
-            std::size_t currBodySize = body.size();
-            if (currBodySize <= 0)
-            {
-                return;
-            }
-            std::size_t bodyDataLocation = currBodySize - sizeof(T);
-            std::memcpy(&data, body.data() + bodyDataLocation, sizeof(T));
-            body.resize(bodyDataLocation);
-            header.size = body.size();
-        }
+        void retrieveData(T& data);
+        void retrieveBuffer(void* buffer, uint32_t bufSize);
 
-        void retrieveBuffer(void* buffer)
-        {
-            std::size_t currBodySize = body.size();
-            if (currBodySize <= 0)
-            {
-                return;
-            }
-            // retrieve size first
-            std::size_t bufSize = 0;
-            retrieveData<std::size_t>(bufSize);
-            if (bufSize <= 0)
-            {
-                // there's actually no buffer?
-                return;
-            }
-
-            std::size_t bodyBufferLocation = body.size() - bufSize;
-            std::memcpy(buffer, body.data() + bodyBufferLocation, bufSize);
-            body.resize(bodyBufferLocation);
-            header.size = body.size();
-        }
-    };
-
-    struct ExampleMsgData
-    {
-        int value = 0;
-        float value2 = 0;
-        std::string strValue;
-
-        void serializeMsgInto(Message& msg)
-        {
-            msg.addData(value, value2);
-            msg.addBuffer(strValue.c_str(), strValue.size() + 1);
-        }
-        void deserializeMsgFrom(Message& msg)
-        {
-            msg.retrieveBuffer(strValue.data());
-            msg.retrieveData(value2, value);
-        }
+        void cleanup();
     };
 
     struct MessagePack
@@ -144,38 +80,22 @@ namespace core::messages
         virtual void deserializeFrom(Message& msg) = 0;
     };
 
-    struct ChatMessage : public MessagePack
-    {
+    DEFINE_MESSAGE(ChatMessage,
         std::string text;
         std::string username;
         uint32_t hostID;
+    );
 
-        void serializeInto(Message& msg) const override
-        {
-            msg.addBuffer(text.c_str(), text.length() + 1);
-            msg.addBuffer(username.c_str(), username.length() + 1);
-            msg.addData(hostID);
-        }
-        void deserializeFrom(Message& msg) override
-        {
-            msg.retrieveData(hostID);
-            msg.retrieveBuffer(username.data());
-            msg.retrieveBuffer(text.data());
-        }
-    };
-
-    struct ConnectionEstablished : public MessagePack
-    {
+    DEFINE_MESSAGE(HostConnection,
+        std::string username;
         uint32_t hostID;
+    );
 
-        void serializeInto(Message& msg) const override
-        {
-            msg.addData(hostID);
-        }
+    DEFINE_MESSAGE(ConnectionEstablished,
+        std::string username;
+    );
 
-        void deserializeFrom(Message& msg) override
-        {
-            msg.retrieveData(hostID);
-        }
-    };
+    DEFINE_MESSAGE(HostData, 
+        uint32_t hostID;
+    );
 }

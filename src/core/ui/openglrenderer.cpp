@@ -10,7 +10,7 @@ OpenGLRenderer::OpenGLRenderer(std::string const& appName)
 {
 }
 
-bool OpenGLRenderer::initWindow()
+bool OpenGLRenderer::initViewport()
 {
     if (!glfwInit())
     {
@@ -68,7 +68,7 @@ bool OpenGLRenderer::initWindow()
 
 bool OpenGLRenderer::createFrame()
 {
-    if (glfwWindowShouldClose(m_Window))
+    if (!m_Window || glfwWindowShouldClose(m_Window))
     {
         // TODO: call application exit event with relay
         return false;
@@ -88,6 +88,9 @@ bool OpenGLRenderer::createFrame()
 
 bool OpenGLRenderer::renderFrame()
 {
+    if (!m_Window)
+        return false;
+
     int height, width;
     glfwGetFramebufferSize(m_Window, &width, &height);
     glViewport(0, 0, width, height);
@@ -104,18 +107,31 @@ bool OpenGLRenderer::renderFrame()
 
 void OpenGLRenderer::destroy()
 {
-    ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
+    ImGui_ImplOpenGL3_Shutdown();
     ImGui::DestroyContext();
 
     glfwDestroyWindow(m_Window);
+    m_Window = nullptr;
     glfwTerminate();
 }
 
-void OpenGLRenderer::getWindowSize(int& width, int& height)
+void OpenGLRenderer::getViewportSize(int& width, int& height)
 {
+    if (!m_Window)
+        return;
+
     glfwGetWindowSize(m_Window, &width, &height);
 }
+
+void OpenGLRenderer::setViewportSize(int width, int height)
+{
+    if (!m_Window)
+        return;
+
+    glfwSetWindowSize(m_Window, width, height);
+}
+
 
 GLFWwindow* OpenGLRenderer::getWindow()
 {

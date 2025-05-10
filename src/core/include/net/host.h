@@ -11,6 +11,7 @@
 #include <memory>
 #include <map>
 #include <functional>
+#include <mutex>
 
 namespace core
 {
@@ -41,9 +42,11 @@ namespace core
 		asio::ip::tcp::socket m_Socket;
 
 		utils::TSQueue<messages::Message> m_MessageWriteQueue;
-		utils::TSQueue<messages::Message> m_MessageReadQueue;
+		messages::Message m_TempMessageRead;
 
 		uint32_t m_HostID;
+
+		std::mutex m_Mutex;
 
 		HostRelay& m_EventRelay;
 

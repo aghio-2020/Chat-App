@@ -16,13 +16,18 @@ public:
 	void update() override;
 
 private:
-	void onMessageReceived(core::messages::Message& msg);
 	void onMessageSent(core::messages::MessageID msgID);
-	void processReceivedChatMessage(core::messages::Message& msg);
+	void handleMessageReceived(core::messages::Message& msg);
+	void handleReceivedChatMessage(core::messages::Message& msg);
+	void handleHostConnectionMessage(core::messages::Message& msg);
+	void handleHostDisconnectionMessage(core::messages::Message& msg);
+	void handleHostDataReceivedMessage(core::messages::Message& msg);
 
 private:
 	void handleChatMessagePosted(core::events::ApplicationEvent const& event);
 	void handleServerChosen(core::events::ApplicationEvent const& event);
 
 	core::Client m_Client;
+	std::string m_Username;
+	uint32_t m_HostID;
 };

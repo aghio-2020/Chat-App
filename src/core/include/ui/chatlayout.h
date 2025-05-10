@@ -19,6 +19,8 @@ namespace core::ui
 		void addMessageToUI(utils::ChatMessageInfo const& msg);
 
 	private:
+		void onMessagePosted();
+
 		events::EventRelay<events::GUIEvents>& m_EventRelay;
 		std::vector<utils::ChatMessageInfo> m_ChatMessages;
 		std::string m_MessageInput;

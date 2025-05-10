@@ -13,6 +13,10 @@ public:
 	void run() override;
 
 private:
+	void handleExitApplication();
+
 	UIComponent m_UIComp;
 	NetworkComponent m_NetworkComp;
+
+	bool m_Quit = false;
 };

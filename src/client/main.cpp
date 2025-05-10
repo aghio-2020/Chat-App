@@ -4,4 +4,6 @@
 int main()
 {
 	ClientApplication app;
+	app.init();
+	app.run();
 }

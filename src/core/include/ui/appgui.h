@@ -1,10 +1,11 @@
 #pragma once
 
-#include <ui/chatlayout.h>
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 
 #include <ui/openglrenderer.h>
+#include <ui/chatlayout.h>
+#include <ui/bootlayout.h>
 #include <communication/eventrelay.h>
 #include <communication/guievents.h>
 #include <net/message.h>
@@ -21,7 +22,8 @@ namespace core::ui
 
 	struct AppStateData
 	{
-		WindowType windowType;
+		WindowType windowType = BOOT_WINDOW;
+		bool closing = false;
 	};
 
 	class AppGUI : public events::EventRelay<events::GUIEvents>
@@ -33,14 +35,17 @@ namespace core::ui
 		void init();
 		void closeApp();
 		void onUpdate();
-		void onNewChatMessage(core::messages::ChatMessage const& msg);
+		AppStateData& getAppState();
+		void onNewChatMessage(messages::ChatMessage const& msg);
+		void onWindowChange(WindowType win);
 
 	private:
 		void showBootWindowUI();
 		void showMainWindowUI();
 
-		core::ui::OpenGLRenderer m_Renderer;
-		AppStateData m_State;
+		OpenGLRenderer m_Renderer;
+		AppStateData m_AppState;
 		ChatLayout m_ChatLayout;
+		BootLayout m_BootLayout;
 	};
 }

@@ -1,5 +1,7 @@
 #include "servercomponent.h"
 
+#include <iostream>
+
 ServerComponent::ServerComponent(core::events::Broadcaster& broadcaster)
 	: m_Server()
 {
@@ -11,25 +13,80 @@ void ServerComponent::init()
 	m_Server.getRelay().onHostConnection.subscribe(
 		[this](uint32_t hostID)
 		{
-			// send the host id to the respective client
-			core::messages::Message msg;
-			msg.header.id = core::messages::MessageID::NOTIFICATION;
-			core::messages::ConnectionEstablished msgData;
-			msgData.hostID = hostID;
-			msgData.serializeInto(msg);
+			core::messages::Message cbMsg;
+			core::messages::HostData dataMsg;
+			dataMsg.hostID = hostID;
+			dataMsg.serializeInto(cbMsg);
 
-			m_Server.sendMessageToClient(msg, hostID);
-		});
-
+			// send the host server data back to the host that just connected
+			m_Server.sendMessageToClient(cbMsg, hostID);
+		}
+	);
 	m_Server.getRelay().onMessageReceived.subscribe(
 		[this](uint32_t senderHostID, core::messages::Message& msg)
 		{
-			m_Server.broadcastMessageToClientsExcept(senderHostID, msg);
-		});
+			handleMessageReceived(msg, senderHostID);
+		}
+	);
 
 	m_Server.run(6969);
 }
 
 void ServerComponent::update()
 {
+}
+
+void ServerComponent::handleMessageReceived(core::messages::Message& msg, const uint32_t senderHostID)
+{
+	switch (msg.header.id)
+	{
+	case core::messages::MessageID::NOTIFICATION:
+		break;
+
+	case core::messages::MessageID::CONNECTION_ESTABLISHED:
+		handleConnectionEstablishedBy(senderHostID, msg);
+		break;
+
+	case core::messages::MessageID::HOST_CONNECTION:
+		std::cout << "HOST_CONNECTION reached server. Server should only send this, not receive it\n"; // server should send this, not receive
+		break;
+
+	case core::messages::MessageID::HOST_DISCONNECTED:
+		std::cout << "HOST_DISCONNECTED reached server. Server should only send this, not receive it\n"; // server should send this, not receive
+		break;
+
+	case core::messages::MessageID::HOST_DATA:
+		// COULD: 
+		// let the clients update their data through this
+		std::cout << "HOST_DATA reached server. Server should only send this, not receive it\n"; // server should send this, not receive
+		break;
+
+	case core::messages::MessageID::CHAT_MESSAGE:
+		handleChatMessageReceivedFrom(senderHostID, msg);
+		break;
+
+	default:
+		break;
+	}
+}
+
+void ServerComponent::handleChatMessageReceivedFrom(uint32_t senderHostID, core::messages::Message& msg)
+{
+	m_Server.broadcastMessageToClientsExcept(senderHostID, msg);
+}
+
+void ServerComponent::handleConnectionEstablishedBy(const uint32_t senderHostID, core::messages::Message& msg)
+{
+	core::messages::ConnectionEstablished msgPack;
+	msgPack.deserializeFrom(msg);
+
+	core::messages::Message relayMsg;
+	core::messages::HostConnection connMsg;
+	connMsg.hostID = senderHostID;
+	connMsg.username.assign(msgPack.username);
+	connMsg.serializeInto(relayMsg);
+
+	// send the host data to other clients that are in the chat connection pool
+	m_Server.broadcastMessageToClientsExcept(senderHostID, relayMsg);
+
 }

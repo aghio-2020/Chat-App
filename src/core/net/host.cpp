@@ -36,6 +36,7 @@ void Host::connect(asio::ip::tcp::resolver::results_type const& endpoints)
 			std::cout << "client connected\n";
 			if (errorCode)
 			{
+				std::cout << errorCode.message();
 				return;
 			}
 			// start awaiting for messages async
@@ -61,32 +62,33 @@ uint32_t Host::getID() const
 
 void Host::readMessageHeader()
 {
-	messages::Message msg;
-	m_MessageReadQueue.push_back(msg);
-	m_Socket.async_read_some(asio::buffer(&m_MessageReadQueue.front().header, sizeof(messages::MessageHeader)),
+	asio::async_read(m_Socket, asio::buffer(&m_TempMessageRead.header, sizeof(messages::MessageHeader)),
 		[this](boost::system::error_code errorCode, std::size_t bytes)
 		{
-			std::cout << "message read\n";
 			if (!errorCode)
 			{
+				std::cout << "header read\n";
 				if (bytes < sizeof(messages::MessageHeader))
 				{
 					// TODO: handle case
 				}
-				if (m_MessageReadQueue.front().header.size > 0)
+				if (m_TempMessageRead.header.size > 0)
 				{
+					m_TempMessageRead.body.resize(m_TempMessageRead.header.size);
 					readMessageBody();
 				}
 				else
 				{
-					m_EventRelay.getRelay().onMessageReceived(getID(), m_MessageReadQueue.front());
+					m_EventRelay.getRelay().onMessageReceived(getID(), m_TempMessageRead);
+					m_TempMessageRead.cleanup();
 
-					m_MessageReadQueue.pop();
+					// continue listening for messages
 					readMessageHeader();
 				}
 			}
 			else
 			{
+				std::cout << errorCode.message() << " while reading body\n";
 				// TODO: handle errors
 			}
 		});
@@ -94,25 +96,32 @@ void Host::readMessageHeader()
 
 void Host::readMessageBody()
 {
-	m_Socket.async_read_some(asio::buffer(m_MessageReadQueue.front().body.data(), m_MessageReadQueue.front().header.size),
+	asio::async_read(m_Socket, asio::buffer(m_TempMessageRead.body.data(), m_TempMessageRead.header.size),
 		[this](boost::system::error_code errorCode, std::size_t bytes)
 		{
 			if (!errorCode)
 			{
-				if (bytes < m_MessageReadQueue.front().header.size)
+				std::cout << "body read\n";
+				if (bytes < m_TempMessageRead.header.size)
 				{
 					// TODO: handle case
 				}
 
-				m_EventRelay.getRelay().onMessageReceived(getID(), m_MessageReadQueue.front());
+				if (m_TempMessageRead.header.id == messages::MessageID::HOST_DATA)
+				{
+					std::cout << "YUP\n";
+				}
+
+				// handle message, probably relay if server, send to ui if client (defined on each app)
+				m_EventRelay.getRelay().onMessageReceived(getID(), m_TempMessageRead);
+				m_TempMessageRead.cleanup();
 
 				// start listening for new messages
-				m_MessageReadQueue.pop();
 				readMessageHeader();
 			}
 			else
 			{
-				std::cout << errorCode.message();
+				std::cout << errorCode.message() << " while reading body\n";
 				// TODO: handle errors
 			}
 		});
@@ -138,9 +147,9 @@ void Host::writeMessageHeader()
 	m_Socket.async_write_some(asio::buffer(&m_MessageWriteQueue.front().header, sizeof(messages::MessageHeader)),
 		[this](boost::system::error_code errorCode, std::size_t bytes)
 		{
-			std::cout << "message written\n";
 			if (!errorCode)
 			{
+				std::cout << "header written\n";
 				if (bytes < sizeof(messages::MessageHeader))
 				{
 					// TODO: handle case
@@ -166,6 +175,7 @@ void Host::writeMessageHeader()
 			}
 			else
 			{
+				std::cout << errorCode.message() << " while writing header\n";
 				// TODO: handle error
 			}
 		});
@@ -173,7 +183,7 @@ void Host::writeMessageHeader()
 
 void Host::writeMessageBody()
 {
-	m_Socket.async_write_some(asio::buffer(&m_MessageWriteQueue.front().body, m_MessageWriteQueue.front().body.size()),
+	m_Socket.async_write_some(asio::buffer(m_MessageWriteQueue.front().body.data(), m_MessageWriteQueue.front().body.size()),
 		[this](boost::system::error_code errorCode, std::size_t bytes)
 		{
 			if (bytes < m_MessageWriteQueue.front().body.size())
@@ -182,6 +192,7 @@ void Host::writeMessageBody()
 			}
 			if (!errorCode)
 			{
+				std::cout << "body written\n";
 				m_MessageWriteQueue.pop();
 
 				if (!m_MessageWriteQueue.empty())
@@ -195,6 +206,7 @@ void Host::writeMessageBody()
 			}
 			else
 			{
+				std::cout << errorCode.message() << " while writing body\n";
 				// TODO: handle error
 			}
 		});

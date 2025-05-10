@@ -11,7 +11,8 @@ namespace core
 
 	Client::~Client()
 	{
-		m_CtxThread.join();
+		if (m_CtxThread.joinable())
+			m_CtxThread.join();
 	}
 
 	void Client::connectToServer(std::string const& addr, std::string const& port)

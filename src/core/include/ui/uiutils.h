@@ -1,5 +1,7 @@
 #pragma once
 
+#include <imgui.h>
+
 #include <string>
 #include <chrono>
 
@@ -14,6 +16,9 @@ namespace core::ui::utils
 		bool mine = false;
 	};
 
-	void showChatMessageBlock(ChatMessageInfo const& msg);
-	bool showInputBox(std::string const& label, std::string const& hint, std::string& buf);
+	void ShowChatMessageBlock(ChatMessageInfo const& msg);
+	bool ShowInputBox(std::string const& label, 
+		std::string const& hint, 
+		std::string& buf,
+		ImGuiInputTextFlags flags);
 }

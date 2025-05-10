@@ -20,8 +20,14 @@ namespace core::events
         CHAT_MESSAGE_RECEIVED,
         CHAT_MESSAGE_POSTED,
         SERVER_CHOSEN,
+        // my host -----------------
         CONNECTION_ESTABLISHED,
+        CONNECTION_CLOSED,
+        HOST_DATA_RECEIVED,
+        // other hosts 
+        HOST_CONNECTED,
         HOST_DISCONNECTED,
+        // -------------------------
         EXIT_APPLICATION,
     };
     
@@ -33,10 +39,28 @@ namespace core::events
         EventType type = EventType::NONE;
     };
 
+    struct ExitApplication : public ApplicationEvent
+    {
+        ExitApplication() { type = EventType::EXIT_APPLICATION; }
+    };
+
     struct ConnectionEstablished : public ApplicationEvent
     {
         ConnectionEstablished() { type = EventType::CONNECTION_ESTABLISHED; }
 
+        uint32_t hostID;
+    };
+
+    struct ConnectionClosed : public ApplicationEvent
+    {
+        ConnectionClosed() { type = EventType::CONNECTION_CLOSED; }
+    };
+
+    struct HostConnected : public ApplicationEvent
+    {
+        HostConnected() { type = EventType::HOST_CONNECTED; }
+
+        std::string username;
         uint32_t hostID;
     };
 
@@ -45,6 +69,13 @@ namespace core::events
         HostDisconnected() { type = EventType::HOST_DISCONNECTED; }
 
         uint32_t hostID;
+    };
+
+    struct HostDataReceived : public ApplicationEvent
+    {
+        HostDataReceived() { type = EventType::HOST_DATA_RECEIVED; }
+
+        uint32_t myHostID; // SHOULD: if this data pack gets bigger, make a HostData struct that contains it
     };
 
     struct ChatMessageReceived : public ApplicationEvent
@@ -66,7 +97,7 @@ namespace core::events
     {
         MessageSent() { type = EventType::MESSAGE_SENT; }
 
-        messages::MessageID msgID;
+        messages::MessageID msgID; // = messages::MessageID::MESSAGE_SENT;
     };
 
     struct ServerChosen : public ApplicationEvent
@@ -75,6 +106,7 @@ namespace core::events
 
         std::string address;
         std::string port;
+        std::string username;
     };
 
 }

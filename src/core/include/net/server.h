@@ -21,17 +21,18 @@ namespace core
 	{
 	public:
 		Server();
+		~Server();
 
 		void run(uint16_t port);
 		void shutdown();
 		void broadcastMessageToClients(messages::Message const& msg);
-		void broadcastMessageToClientsExcept(uint32_t senderHostID, messages::Message const& msg);
-		void sendMessageToClient(messages::Message const& msg, uint32_t hostID);
+		void broadcastMessageToClientsExcept(const uint32_t senderHostID, messages::Message const& msg);
+		void sendMessageToClient(messages::Message const& msg, const uint32_t hostID);
 
 	private:
 		void listenForConnection();
 		void sendMessageToClient(messages::Message const& msg, std::unique_ptr<Host>& host);
-		void removeHost(uint32_t hostID);
+		void removeHost(const uint32_t hostID);
 
 		// callback functions
 		void onConnectionAccepted(asio::ip::tcp::socket&& socket);
