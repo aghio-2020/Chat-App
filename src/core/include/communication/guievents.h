@@ -13,6 +13,8 @@ namespace core::events
 
         InternalEvent<std::string const&, std::string const&> onServerChosen;
 
+        InternalEvent<std::string&, uint32_t&> getUserData;
+
         InternalEvent<> onShouldQuit;
     };
 }

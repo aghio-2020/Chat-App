@@ -41,7 +41,7 @@ void UIComponent::init()
 			// TODO: turn into CHAT_MESSAGE network message and send in CHAT_MESSAGE_POSTED event
 			core::events::ChatMessagePosted msgPostEvent;
 			msgPostEvent.msg.text = msg.text;
-			msgPostEvent.msg.username = msg.userName;
+			msgPostEvent.msg.username = msg.username;
 			msgPostEvent.msg.hostID = msg.hostID;
 
 			m_Broadcaster->pushEvent(msgPostEvent);
@@ -56,6 +56,13 @@ void UIComponent::init()
 			event.port = "6969";
 
 			m_Broadcaster->pushEvent(event);
+		}
+	);
+	m_AppGui.getRelay().getUserData.subscribe(
+		[this](std::string& username, uint32_t& hostID)
+		{
+			username = m_UserData.username;
+			hostID = m_UserData.hostID;
 		}
 	);
 	m_AppGui.getRelay().onShouldQuit.subscribe(
@@ -88,7 +95,11 @@ void UIComponent::handleHostConnectedToChat(core::events::ApplicationEvent const
 {
 	core::events::HostConnected const& aEvent = static_cast<core::events::HostConnected const&>(event);
 
-	
+	core::ui::utils::HostInfo host;
+	host.username = aEvent.username;
+	host.hostID = aEvent.hostID;
+
+	m_AppGui.onNewHostInChat(host);
 }
 
 // server returned host data after connection likely

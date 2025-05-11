@@ -14,6 +14,7 @@ namespace core::ui
 		BootLayout(events::EventRelay<events::GUIEvents>& eventRelay);
 
 		void update() override;
+		void setLayoutSize(float width, float height);
 		
 	private:
 		void onEnter();
@@ -23,5 +24,8 @@ namespace core::ui
 		std::string m_UsernameHint;
 		std::string m_ServerAddress;
 		std::string m_ServerAddressHint;
+
+		float m_Width;
+		float m_Height;
 	};
 }

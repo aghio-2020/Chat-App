@@ -4,6 +4,16 @@
 #include <communication/broadcaster.h>
 #include <net/server.h>
 
+#include <map>
+
+// if I need to send some to another host
+struct HostData
+{
+	std::string username;
+	std::string address;
+	uint32_t hostID;
+};
+
 class ServerComponent : public core::IComponent
 {
 public:
@@ -18,4 +28,6 @@ private:
 	void handleConnectionEstablishedBy(const uint32_t senderHostID, core::messages::Message& msg);
 
 	core::Server m_Server;
+
+	std::vector<HostData> m_HostsData;
 };

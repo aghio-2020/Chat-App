@@ -11,7 +11,7 @@ ClientApplication::ClientApplication()
 void ClientApplication::init()
 {
 	m_Broadcaster.subscribeToEvent(core::events::EventType::EXIT_APPLICATION,
-		[this](core::events::ApplicationEvent const& event)
+		[this](core::events::ApplicationEvent const&)
 		{
 			handleExitApplication();
 		}
@@ -30,6 +30,9 @@ void ClientApplication::run()
 	}
 }
 
+// TODO: 
+// should close ioContext as well since its running in the background
+// also shutdown async operations, otherwise the client will still dangle around
 void ClientApplication::handleExitApplication()
 {
 	m_Quit = true;

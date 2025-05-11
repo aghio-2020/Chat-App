@@ -107,11 +107,6 @@ void Host::readMessageBody()
 					// TODO: handle case
 				}
 
-				if (m_TempMessageRead.header.id == messages::MessageID::HOST_DATA)
-				{
-					std::cout << "YUP\n";
-				}
-
 				// handle message, probably relay if server, send to ui if client (defined on each app)
 				m_EventRelay.getRelay().onMessageReceived(getID(), m_TempMessageRead);
 				m_TempMessageRead.cleanup();

@@ -40,6 +40,10 @@ namespace core::ui
 		ImGui::EndChild();
 	}
 
+	void BootLayout::setLayoutSize(float width, float height)
+	{
+	}
+
 	void BootLayout::onEnter()
 	{
 		bool retry = false;

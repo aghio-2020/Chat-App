@@ -44,6 +44,10 @@ namespace core
 	void Client::disconnectFromServer()
 	{
 		m_ServerHost->closeConnection();
+		if (m_CtxThread.joinable())
+		{
+			m_CtxThread.join();
+		}
 	}
 
 	void Client::sendMessage(messages::Message const& msg)

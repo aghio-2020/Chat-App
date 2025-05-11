@@ -2,18 +2,23 @@
 
 #include <string>
 
+#include <imgui_internal.h>
+
 namespace core::ui
 {
-    const int k_BootWinHeight = 400;
+    const int k_BootWinHeight = 300;
     const int k_BootWinWidth = 400;
 
     const int k_MainWinHeight = 720;
-    const int k_MainWinWidth = 720;
+    const int k_MainWinWidth = 800;
+
+    const float k_MaxSidebarWidth = 220;
 
     AppGUI::AppGUI(std::string const& appName)
         : m_Renderer(appName)
-        , m_ChatLayout(static_cast<events::EventRelay<events::GUIEvents>&>(*this))
         , m_BootLayout(static_cast<events::EventRelay<events::GUIEvents>&>(*this))
+        , m_ChatLayout(static_cast<events::EventRelay<events::GUIEvents>&>(*this), m_ChatMessages)
+        , m_ParticipantsLayout(static_cast<events::EventRelay<events::GUIEvents>&>(*this), m_Participants)
     {
     }
 
@@ -38,7 +43,8 @@ namespace core::ui
         m_Renderer.setViewportSize(k_BootWinWidth, k_BootWinHeight);
 
         ImGuiIO& io = ImGui::GetIO(); (void)io;
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
         ImGui::StyleColorsClassic();
     }
@@ -59,11 +65,12 @@ namespace core::ui
 
         if (m_AppState.windowType == WindowType::MAIN_WINDOW)
         {
+            checkWindowSize();
             showMainWindowUI();
         }
         else if (m_AppState.windowType == WindowType::BOOT_WINDOW)
         {
-            //m_Renderer.setViewportSize(k_BootWinWidth, k_BootWinHeight);
+            m_Renderer.setViewportSize(k_BootWinWidth, k_BootWinHeight);
             showBootWindowUI();
         }
 
@@ -84,10 +91,10 @@ namespace core::ui
     {
         core::ui::utils::ChatMessageInfo msgInfo;
         msgInfo.text = msg.text;
-        msgInfo.userName = msg.username;
+        msgInfo.username = msg.username;
         msgInfo.hostID = msg.hostID;
 
-        m_ChatLayout.addMessageToUI(msgInfo);
+        m_ChatMessages.emplace_back(msgInfo);
     }
 
     void AppGUI::onWindowChange(WindowType win)
@@ -102,6 +109,11 @@ namespace core::ui
         {
             m_Renderer.setViewportSize(k_BootWinWidth, k_BootWinHeight);
         }
+    }
+
+    void AppGUI::onNewHostInChat(ui::utils::HostInfo const& host)
+    {
+        m_Participants.emplace_back(host);
     }
 
     void AppGUI::showBootWindowUI()
@@ -119,15 +131,36 @@ namespace core::ui
 
     void AppGUI::showMainWindowUI()
     {
+        //TODO: figure how to do with window docking
+
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->Pos);
         ImGui::SetNextWindowSize(viewport->Size);
         ImGui::Begin("Chat Up!", nullptr, 
             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
 
+        float fullWidth = ImGui::GetContentRegionAvail().x;
+        float fullHeight = ImGui::GetContentRegionAvail().y;
+
+        float leftWidth = fullWidth * 0.25f;
+        float rightWidth = fullWidth - leftWidth;
+
+        m_ParticipantsLayout.setLayoutSize(leftWidth, fullHeight);
+        m_ParticipantsLayout.update();
+        ImGui::SameLine();
+        m_ChatLayout.setLayoutSize(rightWidth, fullHeight);
         m_ChatLayout.update();
 
         ImGui::End();
+    }
+
+    // TODO:
+    // find a better and easier way through the renderer and the viewport
+    void AppGUI::checkWindowSize()
+    {
+        int w, h;
+        m_Renderer.getViewportSize(w, h);
+        m_Renderer.setViewportSize(w < k_MainWinWidth ? k_MainWinWidth : w, h < k_MainWinHeight ? k_MainWinHeight : h);
     }
 
 }

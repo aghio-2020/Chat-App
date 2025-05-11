@@ -29,7 +29,7 @@ void NetworkComponent::init()
 	m_Broadcaster->subscribeToEvent(core::events::EventType::EXIT_APPLICATION,
 		[this](core::events::ApplicationEvent const& event)
 		{
-			// TODO: handle closing connections
+			m_Client.disconnectFromServer();
 		}
 	);
 
@@ -38,6 +38,17 @@ void NetworkComponent::init()
 		{
 			core::events::ConnectionClosed event;
 			m_Broadcaster->pushEvent(event);
+		}
+	);
+	m_Client.getRelay().onHostConnection.subscribe(
+		[this](uint32_t)
+		{
+			core::messages::Message connMsg;
+			core::messages::ConnectionEstablished connMsgPack;
+			connMsgPack.username = m_Username;
+			connMsgPack.serializeInto(connMsg);
+
+			m_Client.sendMessage(connMsg);
 		}
 	);
 	m_Client.getRelay().onMessageSent.subscribe(
@@ -84,7 +95,7 @@ void NetworkComponent::handleMessageReceived(core::messages::Message& msg)
 		handleHostDisconnectionMessage(msg);
 		break;
 
-	case core::messages::MessageID::HOST_DATA:
+	case core::messages::MessageID::SERVER_DATA:
 		handleHostDataReceivedMessage(msg);
 		break;
 
@@ -123,21 +134,12 @@ void NetworkComponent::handleHostDisconnectionMessage(core::messages::Message& m
 
 void NetworkComponent::handleHostDataReceivedMessage(core::messages::Message& msg)
 {
-	std::cout << "HOST_DATA received\n";
-	core::messages::HostData msgPack;
+	core::messages::ServerData msgPack;
 	msgPack.deserializeFrom(msg);
 
 	core::events::HostDataReceived dataReceivedEvent;
 	dataReceivedEvent.myHostID = msgPack.hostID;
 	m_HostID = msgPack.hostID;
-
-	core::messages::Message connMsg;
-	core::messages::ConnectionEstablished connMsgPack;
-	connMsgPack.username = m_Username;
-	connMsgPack.serializeInto(connMsg);
-
-	m_Client.sendMessage(connMsg);
-	std::cout << "sent CONNECTION_ESTABLISHED msg\n";
 
 	m_Broadcaster->pushEvent(dataReceivedEvent);
 }

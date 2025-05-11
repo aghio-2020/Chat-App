@@ -7,18 +7,21 @@ namespace core::ui
 {
 	const std::size_t k_MaxInputSize = 256;
 
-	ChatLayout::ChatLayout(events::EventRelay<events::GUIEvents>& eventRelay)
+	ChatLayout::ChatLayout(events::EventRelay<events::GUIEvents>& eventRelay, std::vector<utils::ChatMessageInfo>& messages)
 		: m_EventRelay(eventRelay)
+		, m_ChatMessages(messages)
 	{
 		m_MessageInput.reserve(k_MaxInputSize);
 	}
 
 	void ChatLayout::update()
 	{
-		ImGui::BeginChild("Chat");
+		float paddingSize = ImGui::GetFrameHeightWithSpacing();
+		// deduce border size to avoid a scrollbar appearing when not needed
+		ImGui::BeginChild("Chat", ImVec2(m_Width, m_Height));
 
 		ImGui::BeginChild("MessagesView", 
-			ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeightWithSpacing()), 
+			ImVec2(m_Width, m_Height - paddingSize),
 			ImGuiChildFlags_None, 
 			ImGuiWindowFlags_HorizontalScrollbar);
 
@@ -29,7 +32,7 @@ namespace core::ui
 
 		ImGui::EndChild();
 
-		ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
+		ImGui::SetCursorPosY(m_Height - paddingSize);
 		if (utils::ShowInputBox("##messagein", "Write something", m_MessageInput, 
 			ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_AlwaysOverwrite))
 		{
@@ -39,22 +42,23 @@ namespace core::ui
 		ImGui::EndChild();
 	}
 
-	void ChatLayout::addMessageToUI(utils::ChatMessageInfo const& msg)
+	void ChatLayout::setLayoutSize(float width, float height)
 	{
-		m_ChatMessages.emplace_back(msg);
+		m_Width = width;
+		m_Height = height;
 	}
 
 	void ChatLayout::onMessagePosted()
 	{
-		utils::ChatMessageInfo msgIn{ m_MessageInput.c_str(),
-				"TODO: username", 0,
-				std::chrono::system_clock::now(),
-				true 
-		};
+		utils::ChatMessageInfo msgIn;
+		msgIn.text = m_MessageInput.c_str();
+		msgIn.sentTime = std::chrono::system_clock::now();
+		msgIn.mine = true;
+		m_EventRelay.getRelay().getUserData(msgIn.username, msgIn.hostID);
 
 		m_MessageInput.clear();
 
-		addMessageToUI(msgIn);
+		m_ChatMessages.emplace_back(msgIn);
 		m_EventRelay.getRelay().onMessagePostedToChat(msgIn);
 	}
 }

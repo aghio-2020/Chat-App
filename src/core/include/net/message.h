@@ -26,7 +26,7 @@
 
 namespace core::messages
 {
-    #define DEFINE_MESSAGE(name, ...) \
+    #define DECLARE_MESSAGE(name, ...) \
         struct name : public MessagePack {                      \
             __VA_ARGS__                                         \
                                                                 \
@@ -38,7 +38,7 @@ namespace core::messages
     enum MessageID : uint32_t
     {
         CONNECTION_ESTABLISHED,
-        HOST_DATA, // send important data back to a connected host, after receiving username
+        SERVER_DATA, // send important data back to a connected host, after receiving username
         HOST_CONNECTION,
         HOST_DISCONNECTED,
         CHAT_MESSAGE,
@@ -80,22 +80,22 @@ namespace core::messages
         virtual void deserializeFrom(Message& msg) = 0;
     };
 
-    DEFINE_MESSAGE(ChatMessage,
+    DECLARE_MESSAGE(ChatMessage,
         std::string text;
         std::string username;
         uint32_t hostID;
     );
 
-    DEFINE_MESSAGE(HostConnection,
+    DECLARE_MESSAGE(HostConnection,
         std::string username;
         uint32_t hostID;
     );
 
-    DEFINE_MESSAGE(ConnectionEstablished,
+    DECLARE_MESSAGE(ConnectionEstablished,
         std::string username;
     );
 
-    DEFINE_MESSAGE(HostData, 
+    DECLARE_MESSAGE(ServerData, 
         uint32_t hostID;
     );
 }

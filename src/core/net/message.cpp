@@ -139,13 +139,13 @@ namespace core::messages
     }
 
 
-    void HostData::serializeInto(Message& msg) const
+    void ServerData::serializeInto(Message& msg) const
     {
-        msg.header.id = MessageID::HOST_DATA;
+        msg.header.id = MessageID::SERVER_DATA;
         msg.addData(hostID);
     }
 
-    void HostData::deserializeFrom(Message& msg)
+    void ServerData::deserializeFrom(Message& msg)
     {
         msg.retrieveData(hostID);
     }

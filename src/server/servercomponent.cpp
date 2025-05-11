@@ -14,7 +14,7 @@ void ServerComponent::init()
 		[this](uint32_t hostID)
 		{
 			core::messages::Message cbMsg;
-			core::messages::HostData dataMsg;
+			core::messages::ServerData dataMsg;
 			dataMsg.hostID = hostID;
 			dataMsg.serializeInto(cbMsg);
 
@@ -55,7 +55,7 @@ void ServerComponent::handleMessageReceived(core::messages::Message& msg, const 
 		std::cout << "HOST_DISCONNECTED reached server. Server should only send this, not receive it\n"; // server should send this, not receive
 		break;
 
-	case core::messages::MessageID::HOST_DATA:
+	case core::messages::MessageID::SERVER_DATA:
 		// COULD: 
 		// let the clients update their data through this
 		std::cout << "HOST_DATA reached server. Server should only send this, not receive it\n"; // server should send this, not receive
@@ -80,13 +80,29 @@ void ServerComponent::handleConnectionEstablishedBy(const uint32_t senderHostID,
 	core::messages::ConnectionEstablished msgPack;
 	msgPack.deserializeFrom(msg);
 
+	// notify a connected host of all the other hosts in the chat
+	for (auto& hostData : m_HostsData)
+	{
+		core::messages::Message connHostMsg;
+		core::messages::HostConnection connectedHostMsgPack;
+		connectedHostMsgPack.username = hostData.username;
+		connectedHostMsgPack.hostID = hostData.hostID;
+		connectedHostMsgPack.serializeInto(connHostMsg);
+		m_Server.sendMessageToClient(connHostMsg, senderHostID);
+	}
+
+	// store a HostData with this user
+	HostData senderHostData;
+
+	// send the connected host data to other hosts already connected
 	core::messages::Message relayMsg;
 	core::messages::HostConnection connMsg;
-	connMsg.hostID = senderHostID;
-	connMsg.username.assign(msgPack.username);
+	senderHostData.hostID = connMsg.hostID = senderHostID;
+	senderHostData.username = connMsg.username = msgPack.username;
 	connMsg.serializeInto(relayMsg);
+
+	m_HostsData.emplace_back(senderHostData);
 
 	// send the host data to other clients that are in the chat connection pool
 	m_Server.broadcastMessageToClientsExcept(senderHostID, relayMsg);
-
 }
