@@ -1,7 +1,17 @@
 
 
-<h1>Build Organization</h1>
+<h1>Chat App</h1>
 
-- Root folder includes cmake scripts of different components and downloads missing dependencies
-- components cmake scripts include all the files and creates the project to then include in the main projects
-  - should each component download/include the dependencies they use unless they are common dependencies? Makes more sense
+to build you need:
+
+- boost 
+- imgui 
+- glfw
+
+connect entering a ip address to the server, or run one locally and connect with localhost
+  
+<h3>Next improvements</h3>
+
+- add fetch contents to cmake for packages
+- move out of boost and use asio separately
+- add more thread safety around callbacks and shared data
