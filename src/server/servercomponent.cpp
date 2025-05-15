@@ -30,6 +30,8 @@ void ServerComponent::init()
 			discMsgPack.hostID = hostID;
 			discMsgPack.serializeInto(discMsg);
 
+			m_HostsData.erase(std::find_if(m_HostsData.begin(), m_HostsData.end(), [hostID](HostData const& host) { return host.hostID == hostID; }));
+
 			std::cout << "host disconnected\n";
 			
 			m_Server.broadcastMessageToClientsExcept(hostID, discMsg);

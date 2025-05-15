@@ -4,6 +4,7 @@
 
 #include <string>
 #include <chrono>
+#include <vector>
 
 namespace core::ui::utils
 {
