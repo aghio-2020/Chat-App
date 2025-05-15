@@ -6,17 +6,16 @@
 
 namespace core::ui
 {
-	const int k_MaxStrSize = 128;
 	const float k_CursorOffset = 30.0f;
+	const int k_StartingBufSize = 256;
 
 	BootLayout::BootLayout(events::EventRelay<events::GUIEvents>& eventRelay)
 		: m_EventRelay(eventRelay)
+		, m_Username(k_StartingBufSize)
+		, m_ServerAddress(k_StartingBufSize)
+		, m_UsernameHint("Enter username")
+		, m_ServerAddressHint("Enter server address")
 	{
-		m_Username.resize(k_MaxStrSize);
-		m_ServerAddress.resize(k_MaxStrSize);
-
-		m_UsernameHint = "Enter username";
-		m_ServerAddressHint = "Enter server address";
 	}
 
 	void BootLayout::update()
@@ -29,7 +28,7 @@ namespace core::ui
 		{
 			onEnter();
 		}
-
+		ImGui::Spacing();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + k_CursorOffset);
 		if (utils::ShowInputBox("##2", m_UsernameHint, m_Username, 
 			ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_AlwaysOverwrite))
@@ -60,11 +59,12 @@ namespace core::ui
 
 		if (!retry)
 		{
-			m_EventRelay.getRelay().onServerChosen(m_ServerAddress, m_Username);
+			m_EventRelay.getRelay().onServerChosen(std::string(m_ServerAddress.data()), std::string(m_Username.data()));
 		}
 		else
 		{
-
+			m_Username[0] = '\0';
+			m_ServerAddress[0] = '\0';
 		}
 	}
 }

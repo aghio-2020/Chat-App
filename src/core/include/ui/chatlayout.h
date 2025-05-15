@@ -23,7 +23,7 @@ namespace core::ui
 
 		events::EventRelay<events::GUIEvents>& m_EventRelay;
 		std::vector<utils::ChatMessageInfo>& m_ChatMessages;
-		std::string m_MessageInput;
+		std::vector<char> m_MessageInput;
 
 		float m_Width;
 		float m_Height;

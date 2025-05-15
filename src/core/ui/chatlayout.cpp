@@ -5,13 +5,13 @@
 
 namespace core::ui
 {
-	const std::size_t k_MaxInputSize = 256;
+	const int k_StartingBufSize = 256;
 
 	ChatLayout::ChatLayout(events::EventRelay<events::GUIEvents>& eventRelay, std::vector<utils::ChatMessageInfo>& messages)
 		: m_EventRelay(eventRelay)
 		, m_ChatMessages(messages)
+		, m_MessageInput(k_StartingBufSize)
 	{
-		m_MessageInput.reserve(k_MaxInputSize);
 	}
 
 	void ChatLayout::update()
@@ -51,12 +51,12 @@ namespace core::ui
 	void ChatLayout::onMessagePosted()
 	{
 		utils::ChatMessageInfo msgIn;
-		msgIn.text = m_MessageInput.c_str();
+		msgIn.text = m_MessageInput.data();
 		msgIn.sentTime = std::chrono::system_clock::now();
 		msgIn.mine = true;
 		m_EventRelay.getRelay().getUserData(msgIn.username, msgIn.hostID);
 
-		m_MessageInput.clear();
+		m_MessageInput[0] = '\0';
 
 		m_ChatMessages.emplace_back(msgIn);
 		m_EventRelay.getRelay().onMessagePostedToChat(msgIn);

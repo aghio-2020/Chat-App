@@ -20,9 +20,9 @@ namespace core::ui
 		void onEnter();
 
 		events::EventRelay<events::GUIEvents>& m_EventRelay;
-		std::string m_Username;
+		std::vector<char> m_Username;
 		std::string m_UsernameHint;
-		std::string m_ServerAddress;
+		std::vector<char> m_ServerAddress;
 		std::string m_ServerAddressHint;
 
 		float m_Width;
