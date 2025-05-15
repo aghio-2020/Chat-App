@@ -40,6 +40,7 @@ namespace core::ui
 		void onNewChatMessage(messages::ChatMessage const& msg);
 		void onWindowChange(WindowType win);
 		void onNewHostInChat(ui::utils::HostInfo const& host);
+		void onHostDisconnected(uint32_t hostID);
 
 	private:
 		void showBootWindowUI();

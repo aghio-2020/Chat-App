@@ -34,11 +34,16 @@ void UIComponent::init()
 			handleHostConnectedToChat(event);
 		}
 	);
+	m_Broadcaster->subscribeToEvent(core::events::EventType::HOST_DISCONNECTED,
+		[this](core::events::ApplicationEvent const& event)
+		{
+			handleHostDisconnected(event);
+		}
+	);
 
 	m_AppGui.getRelay().onMessagePostedToChat.subscribe(
 		[this](core::ui::utils::ChatMessageInfo const& msg)
 		{
-			// TODO: turn into CHAT_MESSAGE network message and send in CHAT_MESSAGE_POSTED event
 			core::events::ChatMessagePosted msgPostEvent;
 			msgPostEvent.msg.text = msg.text;
 			msgPostEvent.msg.username = msg.username;
@@ -100,6 +105,14 @@ void UIComponent::handleHostConnectedToChat(core::events::ApplicationEvent const
 	host.hostID = aEvent.hostID;
 
 	m_AppGui.onNewHostInChat(host);
+}
+
+// external host disconnected
+void UIComponent::handleHostDisconnected(core::events::ApplicationEvent const& event)
+{
+	core::events::HostDisconnected const& aEvent = static_cast<core::events::HostDisconnected const&>(event);
+
+	m_AppGui.onHostDisconnected(aEvent.hostID);
 }
 
 // server returned host data after connection likely

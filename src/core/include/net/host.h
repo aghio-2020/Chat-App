@@ -38,6 +38,8 @@ namespace core
 		void writeMessageHeader();
 		void writeMessageBody();
 
+		void handleError(std::error_code error);
+
 		asio::io_context& m_IOContext;
 		asio::ip::tcp::socket m_Socket;
 

@@ -22,6 +22,19 @@ void ServerComponent::init()
 			m_Server.sendMessageToClient(cbMsg, hostID);
 		}
 	);
+	m_Server.getRelay().onHostDisconnected.subscribe(
+		[this](uint32_t hostID)
+		{
+			core::messages::Message discMsg;
+			core::messages::HostDisconnected discMsgPack;
+			discMsgPack.hostID = hostID;
+			discMsgPack.serializeInto(discMsg);
+
+			std::cout << "host disconnected\n";
+			
+			m_Server.broadcastMessageToClientsExcept(hostID, discMsg);
+		}
+	);
 	m_Server.getRelay().onMessageReceived.subscribe(
 		[this](uint32_t senderHostID, core::messages::Message& msg)
 		{
@@ -34,6 +47,7 @@ void ServerComponent::init()
 
 void ServerComponent::update()
 {
+	
 }
 
 void ServerComponent::handleMessageReceived(core::messages::Message& msg, const uint32_t senderHostID)

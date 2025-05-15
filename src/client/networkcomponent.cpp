@@ -29,7 +29,8 @@ void NetworkComponent::init()
 	m_Broadcaster->subscribeToEvent(core::events::EventType::EXIT_APPLICATION,
 		[this](core::events::ApplicationEvent const& event)
 		{
-			m_Client.disconnectFromServer();
+			if (m_Client.isConnectedToServer())
+				m_Client.disconnectFromServer();
 		}
 	);
 
@@ -67,10 +68,6 @@ void NetworkComponent::init()
 }
 
 void NetworkComponent::update()
-{
-}
-
-void NetworkComponent::onMessageSent(core::messages::MessageID msgID)
 {
 }
 
@@ -129,7 +126,13 @@ void NetworkComponent::handleHostConnectionMessage(core::messages::Message& msg)
 
 void NetworkComponent::handleHostDisconnectionMessage(core::messages::Message& msg)
 {
-	// TODO
+	core::messages::HostDisconnected msgPack;
+	msgPack.deserializeFrom(msg);
+
+	core::events::HostDisconnected hostDiscEvent;
+	hostDiscEvent.hostID = msgPack.hostID;
+
+	m_Broadcaster->pushEvent(hostDiscEvent);
 }
 
 void NetworkComponent::handleHostDataReceivedMessage(core::messages::Message& msg)

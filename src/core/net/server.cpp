@@ -5,14 +5,10 @@
 #include <algorithm>
 
 const auto k_DefaultLocalAddress = "127.0.0.1";
+const unsigned int k_MaxHostsAllowed = 256;
 
 namespace core
 {
-	void log(std::string const& text)
-	{
-		std::cout << text << std::endl;
-	}
-
 	Server::Server()
 		: m_IOContext()
 	{
@@ -53,7 +49,13 @@ namespace core
 				if (errorCode)
 				{
 					// TODO: handle in callback or function
-					log(errorCode.message());
+					std::cout << errorCode.message();
+					return;
+				}
+
+				if (m_Hosts.size() >= k_MaxHostsAllowed)
+				{
+					socket.close();
 					return;
 				}
 
@@ -112,7 +114,7 @@ namespace core
 
 	void Server::onConnectionAccepted(asio::ip::tcp::socket&& socket)
 	{
-		log("host connected");
+		std::cout << "host connected: " << socket.local_endpoint().address() << "\n";
 
 		static ID s_IDCount = 1;
 		std::unique_ptr<Host> host = std::make_unique<Host>(std::move(socket), m_IOContext, static_cast<events::EventRelay<events::HostEvents>&>(*this), s_IDCount);

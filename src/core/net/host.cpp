@@ -31,9 +31,9 @@ Host::~Host()
 void Host::connect(asio::ip::tcp::resolver::results_type const& endpoints)
 {
 	asio::async_connect(m_Socket, endpoints,
-		[this](boost::system::error_code errorCode, asio::ip::tcp::endpoint)
+		[this](std::error_code errorCode, asio::ip::tcp::endpoint endpt)
 		{
-			std::cout << "client connected\n";
+			std::cout << "client connected to host: " << endpt.address() << " port: " << endpt.port() << "\n";
 			if (errorCode)
 			{
 				std::cout << errorCode.message();
@@ -63,11 +63,10 @@ uint32_t Host::getID() const
 void Host::readMessageHeader()
 {
 	asio::async_read(m_Socket, asio::buffer(&m_TempMessageRead.header, sizeof(messages::MessageHeader)),
-		[this](boost::system::error_code errorCode, std::size_t bytes)
+		[this](std::error_code errorCode, std::size_t bytes)
 		{
 			if (!errorCode)
 			{
-				std::cout << "header read\n";
 				if (bytes < sizeof(messages::MessageHeader))
 				{
 					// TODO: handle case
@@ -88,8 +87,8 @@ void Host::readMessageHeader()
 			}
 			else
 			{
-				std::cout << errorCode.message() << " while reading body\n";
-				// TODO: handle errors
+				std::cout << errorCode.message() << " while reading header\n";
+				handleError(errorCode);
 			}
 		});
 }
@@ -97,11 +96,10 @@ void Host::readMessageHeader()
 void Host::readMessageBody()
 {
 	asio::async_read(m_Socket, asio::buffer(m_TempMessageRead.body.data(), m_TempMessageRead.header.size),
-		[this](boost::system::error_code errorCode, std::size_t bytes)
+		[this](std::error_code errorCode, std::size_t bytes)
 		{
 			if (!errorCode)
 			{
-				std::cout << "body read\n";
 				if (bytes < m_TempMessageRead.header.size)
 				{
 					// TODO: handle case
@@ -117,7 +115,7 @@ void Host::readMessageBody()
 			else
 			{
 				std::cout << errorCode.message() << " while reading body\n";
-				// TODO: handle errors
+				handleError(errorCode);
 			}
 		});
 }
@@ -140,11 +138,10 @@ void Host::writeMessageHeader()
 	m_Writing = true;
 	// you can pass a memory location to void* with & as well
 	m_Socket.async_write_some(asio::buffer(&m_MessageWriteQueue.front().header, sizeof(messages::MessageHeader)),
-		[this](boost::system::error_code errorCode, std::size_t bytes)
+		[this](std::error_code errorCode, std::size_t bytes)
 		{
 			if (!errorCode)
 			{
-				std::cout << "header written\n";
 				if (bytes < sizeof(messages::MessageHeader))
 				{
 					// TODO: handle case
@@ -171,7 +168,7 @@ void Host::writeMessageHeader()
 			else
 			{
 				std::cout << errorCode.message() << " while writing header\n";
-				// TODO: handle error
+				handleError(errorCode);
 			}
 		});
 }
@@ -179,7 +176,7 @@ void Host::writeMessageHeader()
 void Host::writeMessageBody()
 {
 	m_Socket.async_write_some(asio::buffer(m_MessageWriteQueue.front().body.data(), m_MessageWriteQueue.front().body.size()),
-		[this](boost::system::error_code errorCode, std::size_t bytes)
+		[this](std::error_code errorCode, std::size_t bytes)
 		{
 			if (bytes < m_MessageWriteQueue.front().body.size())
 			{
@@ -187,7 +184,6 @@ void Host::writeMessageBody()
 			}
 			if (!errorCode)
 			{
-				std::cout << "body written\n";
 				m_MessageWriteQueue.pop();
 
 				if (!m_MessageWriteQueue.empty())
@@ -202,14 +198,24 @@ void Host::writeMessageBody()
 			else
 			{
 				std::cout << errorCode.message() << " while writing body\n";
-				// TODO: handle error
+				handleError(errorCode);
 			}
 		});
+}
+
+void Host::handleError(std::error_code error)
+{
+	// TODO: handle other errors as well
+
+	std::cout << "error cat: " << error.category().name() << ", error val: " << error.value() << "\n";
+	closeConnection();
+	m_EventRelay.getRelay().onHostDisconnected(m_HostID);
 }
 
 void Host::closeConnection()
 {
 	m_Connected = false;
+	m_Writing = false;
 	m_Socket.close();
 }
 

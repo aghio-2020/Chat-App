@@ -26,6 +26,6 @@ namespace core::ui::utils
 	void ShowParticipantBlock(HostInfo const& host);
 	bool ShowInputBox(std::string const& label, 
 		std::string const& hint, 
-		std::string& buf,
+		std::vector<char>& buf,
 		ImGuiInputTextFlags flags);
 }

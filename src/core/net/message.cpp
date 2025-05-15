@@ -149,4 +149,16 @@ namespace core::messages
     {
         msg.retrieveData(hostID);
     }
+
+
+    void HostDisconnected::serializeInto(Message& msg) const
+    {
+        msg.header.id = MessageID::HOST_DISCONNECTED;
+        msg.addData(hostID);
+    }
+
+    void HostDisconnected::deserializeFrom(Message& msg)
+    {
+        msg.retrieveData(hostID);
+    }
 }

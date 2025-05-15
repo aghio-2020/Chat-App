@@ -13,6 +13,9 @@ namespace core
 	{
 		if (m_CtxThread.joinable())
 			m_CtxThread.join();
+
+		disconnectFromServer();
+		m_ServerHost.release();
 	}
 
 	void Client::connectToServer(std::string const& addr, std::string const& port)
@@ -26,28 +29,33 @@ namespace core
 			}
 
 			disconnectFromServer();
+			m_ServerHost.reset();
 		}
 
-		asio::ip::tcp::resolver resolver(m_IOContext);
 		// It has string_view so it might fail if original string is deleted (be carrefour)
 		// Also, consider a way of using async_resolve if necessary
+		asio::ip::tcp::resolver resolver(m_IOContext);
 		auto endpoints = resolver.resolve(addr, port);
 
 		m_ServerHost = std::make_unique<Host>(asio::ip::tcp::socket(m_IOContext), m_IOContext, static_cast<events::EventRelay<events::HostEvents>&>(*this));
 		m_ServerHost->connect(endpoints);
 
-		m_CtxThread = std::thread([this]() { m_IOContext.run(); });
-
-		std::cout << "host: " << endpoints.begin()->host_name() << " port: " << endpoints.begin()->service_name() << "\n";
+		static bool started = false;
+		if (m_CtxThread.joinable())
+		{
+			m_CtxThread.join();
+			m_CtxThread = std::thread([this]() { m_IOContext.run(); });
+		}
+		else if (!started)
+		{
+			started = true;
+			m_CtxThread = std::thread([this]() { m_IOContext.run(); });
+		}
 	}
 
 	void Client::disconnectFromServer()
 	{
 		m_ServerHost->closeConnection();
-		if (m_CtxThread.joinable())
-		{
-			m_CtxThread.join();
-		}
 	}
 
 	void Client::sendMessage(messages::Message const& msg)

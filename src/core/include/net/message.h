@@ -26,15 +26,6 @@
 
 namespace core::messages
 {
-    #define DECLARE_MESSAGE(name, ...) \
-        struct name : public MessagePack {                      \
-            __VA_ARGS__                                         \
-                                                                \
-            void serializeInto(Message& msg) const override;    \
-            void deserializeFrom(Message& msg) override;        \
-        };
-
-
     enum MessageID : uint32_t
     {
         CONNECTION_ESTABLISHED,
@@ -80,22 +71,46 @@ namespace core::messages
         virtual void deserializeFrom(Message& msg) = 0;
     };
 
-    DECLARE_MESSAGE(ChatMessage,
+    struct ChatMessage : public MessagePack
+    {
         std::string text;
         std::string username;
         uint32_t hostID;
-    );
 
-    DECLARE_MESSAGE(HostConnection,
+        void serializeInto(Message& msg) const override;
+        void deserializeFrom(Message& msg) override;
+    };
+
+    struct HostConnection : public MessagePack
+    {
         std::string username;
         uint32_t hostID;
-    );
 
-    DECLARE_MESSAGE(ConnectionEstablished,
+        void serializeInto(Message& msg) const override;
+        void deserializeFrom(Message& msg) override;
+    };
+
+    struct ConnectionEstablished : public MessagePack
+    {
         std::string username;
-    );
 
-    DECLARE_MESSAGE(ServerData, 
+        void serializeInto(Message& msg) const override;
+        void deserializeFrom(Message& msg) override;
+    };
+
+    struct ServerData : public MessagePack
+    {
         uint32_t hostID;
-    );
+
+        void serializeInto(Message& msg) const override;
+        void deserializeFrom(Message& msg) override;
+    };
+
+    struct HostDisconnected : public MessagePack
+    {
+        uint32_t hostID;
+
+        void serializeInto(Message& msg) const override;
+        void deserializeFrom(Message& msg) override;
+    };
 }

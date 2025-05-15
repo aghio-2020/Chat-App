@@ -26,6 +26,7 @@ private:
 	void handleChatMessageReceived(core::events::ApplicationEvent const& event);
 	void handleHostConnectedToChat(core::events::ApplicationEvent const& event);
 	void handleHostDataReceived(core::events::ApplicationEvent const& event);
+	void handleHostDisconnected(core::events::ApplicationEvent const& event);
 
 	core::ui::AppGUI m_AppGui;
 

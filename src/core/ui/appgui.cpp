@@ -116,6 +116,16 @@ namespace core::ui
         m_Participants.emplace_back(host);
     }
 
+    void AppGUI::onHostDisconnected(uint32_t hostID)
+    {
+        m_Participants.erase(std::find_if(m_Participants.begin(), m_Participants.end(), 
+            [hostID](core::ui::utils::HostInfo host) 
+            { 
+                return (host.hostID == hostID); 
+            }
+        ));
+    }
+
     void AppGUI::showBootWindowUI()
     {
         ImGuiViewport* viewport = ImGui::GetMainViewport();

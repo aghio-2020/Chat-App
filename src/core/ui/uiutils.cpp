@@ -27,12 +27,23 @@ namespace core::ui::utils
 
 	bool ShowInputBox(std::string const& label, 
 		std::string const& hint, 
-		std::string& buf, 
+		std::vector<char>& buf, 
 		ImGuiInputTextFlags flags)
 	{
+		static auto inputCallback = [](ImGuiInputTextCallbackData* data) -> int
+			{
+				if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
+				{
+					std::string* str = (std::string*)data->UserData;
+					str->resize(data->BufTextLen);
+					data->Buf = (char*)str->c_str();
+				}
+				return 0;
+			};
+
 		return ImGui::InputTextWithHint(label.c_str(), 
 			hint.c_str(), 
-			buf.data(), 
+			buf.data(),
 			buf.capacity(), 
 			flags
 		);

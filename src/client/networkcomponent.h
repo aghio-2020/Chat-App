@@ -16,7 +16,6 @@ public:
 	void update() override;
 
 private:
-	void onMessageSent(core::messages::MessageID msgID);
 	void handleMessageReceived(core::messages::Message& msg);
 	void handleReceivedChatMessage(core::messages::Message& msg);
 	void handleHostConnectionMessage(core::messages::Message& msg);
