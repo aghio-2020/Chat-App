@@ -37,6 +37,10 @@ namespace core::ui
 			ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_AlwaysOverwrite))
 		{
 			onMessagePosted();
+			if (!ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
+			{
+				ImGui::SetKeyboardFocusHere(-1);
+			}
 		}
 
 		ImGui::EndChild();

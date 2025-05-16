@@ -23,14 +23,14 @@ namespace core::ui
 		ImGui::BeginChild("BootLayout");
 
 		ImGui::SetCursorPosX(ImGui::GetCursorPosY() + k_CursorOffset);
-		if (utils::ShowInputBox("##1", m_ServerAddressHint, m_ServerAddress, 
+		if (utils::ShowInputBox("##serveraddr", m_ServerAddressHint, m_ServerAddress, 
 			ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_AlwaysOverwrite))
 		{
 			onEnter();
 		}
 		ImGui::Spacing();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + k_CursorOffset);
-		if (utils::ShowInputBox("##2", m_UsernameHint, m_Username, 
+		if (utils::ShowInputBox("##username", m_UsernameHint, m_Username, 
 			ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_AlwaysOverwrite))
 		{
 			onEnter();
