@@ -8,7 +8,7 @@ to build you need:
 - imgui 
 - glfw
 
-just including the repos in the packagas should do, except boost which ideally should be in the system default dir (e.g. C:/boost for windows). Otherwise set <p>cmake -DBOOST_ROOT="path"</p> with your install path when running cmake
+just including the repos in the packages should do, except boost which ideally should be in the system default dir (e.g. C:/boost for windows). Otherwise set <p>cmake -DBOOST_ROOT="path"</p> with your install path when running cmake
 
 connect entering a ip address to the server, or run one locally and connect with localhost
   
