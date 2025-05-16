@@ -17,7 +17,7 @@ struct HostData
 class ServerComponent : public core::IComponent
 {
 public:
-	ServerComponent(core::events::Broadcaster& braodcaster);
+	ServerComponent(core::events::Broadcaster& braodcaster, const char* bindingAddress, const uint16_t port);
 
 	void init() override;
 	void update() override;

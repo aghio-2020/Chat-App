@@ -7,7 +7,7 @@
 class ServerApplication : public core::IApplication
 {
 public:
-	ServerApplication();
+	ServerApplication(const char* bindingAddress, const uint16_t port);
 
 	void init() override;
 	void run() override;

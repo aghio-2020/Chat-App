@@ -4,15 +4,14 @@
 #include <iostream>
 #include <algorithm>
 
-const char* k_DefaultLocalAddress = "127.0.0.1";
 const unsigned int k_MaxHostsAllowed = 256;
 
 namespace core
 {
-	Server::Server()
-		: m_IOContext()
+	Server::Server(const char* bindingAddress, const uint16_t port)
 	{
-		
+		m_Acceptor = std::make_unique<asio::ip::tcp::acceptor>(m_IOContext,
+			asio::ip::tcp::endpoint(asio::ip::make_address(bindingAddress), port));
 	}
 
 	Server::~Server()
@@ -20,14 +19,14 @@ namespace core
 		shutdown();
 	}
 	
-	void Server::run(uint16_t port)
+	void Server::run()
 	{
-		m_Acceptor = std::make_unique<asio::ip::tcp::acceptor>(m_IOContext, 
-			asio::ip::tcp::endpoint(asio::ip::make_address(k_DefaultLocalAddress), port));
 		listenForConnection();
 		// start ctx thread after we create a async listen loop
 		// so that the ctx always has something to do and doesnt die
 		m_CtxThread = std::thread([this]() { m_IOContext.run(); });
+
+		std::cout << "Server running!\n\n";
 	}
 
 	void Server::shutdown()
@@ -71,11 +70,6 @@ namespace core
 		if (host->isConnected())
 		{
 			host->sendMessage(msg);
-		}
-		else
-		{
-			// COULD: reattempt connect
-			removeHost(host->getID());
 		}
 	}
 

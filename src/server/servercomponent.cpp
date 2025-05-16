@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-ServerComponent::ServerComponent(core::events::Broadcaster& broadcaster)
-	: m_Server()
+ServerComponent::ServerComponent(core::events::Broadcaster& broadcaster, const char* bindingAddress, const uint16_t port)
+	: m_Server(bindingAddress, port)
 {
 	m_Broadcaster = &broadcaster;
 }
@@ -30,11 +30,12 @@ void ServerComponent::init()
 			discMsgPack.hostID = hostID;
 			discMsgPack.serializeInto(discMsg);
 
+			m_Server.removeHost(hostID);
 			m_HostsData.erase(std::find_if(m_HostsData.begin(), m_HostsData.end(), [hostID](HostData const& host) { return host.hostID == hostID; }));
 
 			std::cout << "host disconnected\n";
 			
-			m_Server.broadcastMessageToClientsExcept(hostID, discMsg);
+			m_Server.broadcastMessageToClients(discMsg);
 		}
 	);
 	m_Server.getRelay().onMessageReceived.subscribe(
@@ -44,7 +45,7 @@ void ServerComponent::init()
 		}
 	);
 
-	m_Server.run(6969);
+	m_Server.run();
 }
 
 void ServerComponent::update()

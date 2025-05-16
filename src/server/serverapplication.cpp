@@ -1,8 +1,8 @@
 #include "serverapplication.h"
 
-ServerApplication::ServerApplication()
+ServerApplication::ServerApplication(const char* bindingAddress, const uint16_t port)
 	: IApplication()
-	, m_ServerComp(m_Broadcaster)
+	, m_ServerComp(m_Broadcaster, bindingAddress, port)
 {
 	init();
 	run();

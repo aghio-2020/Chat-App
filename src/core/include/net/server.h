@@ -20,19 +20,19 @@ namespace core
 	class Server : public events::EventRelay<events::HostEvents>
 	{
 	public:
-		Server();
+		Server(const char* bindingAddress, const uint16_t port);
 		~Server();
 
-		void run(uint16_t port);
+		void run();
 		void shutdown();
 		void broadcastMessageToClients(messages::Message const& msg);
 		void broadcastMessageToClientsExcept(const uint32_t senderHostID, messages::Message const& msg);
 		void sendMessageToClient(messages::Message const& msg, const uint32_t hostID);
+		void removeHost(const uint32_t hostID);
 
 	private:
 		void listenForConnection();
 		void sendMessageToClient(messages::Message const& msg, std::unique_ptr<Host>& host);
-		void removeHost(const uint32_t hostID);
 
 		// callback functions
 		void onConnectionAccepted(asio::ip::tcp::socket&& socket);
