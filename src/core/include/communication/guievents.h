@@ -11,7 +11,7 @@ namespace core::events
     public:
         InternalEvent<ui::utils::ChatMessageInfo const&> onMessagePostedToChat;
 
-        InternalEvent<std::string const&, std::string const&> onServerChosen;
+        InternalEvent<std::string const&, std::string const&, std::string const&> onServerChosen;
 
         InternalEvent<std::string&, uint32_t&> getUserData;
 

@@ -22,6 +22,8 @@ namespace core::ui
 		events::EventRelay<events::GUIEvents>& m_EventRelay;
 		std::vector<char> m_Username;
 		std::string m_UsernameHint;
+		std::vector<char> m_Port;
+		std::string m_PortHint;
 		std::vector<char> m_ServerAddress;
 		std::string m_ServerAddressHint;
 
