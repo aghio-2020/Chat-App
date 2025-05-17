@@ -11,9 +11,9 @@ namespace core::ui
 
 	BootLayout::BootLayout(events::EventRelay<events::GUIEvents>& eventRelay)
 		: m_EventRelay(eventRelay)
-		, m_Username(k_StartingBufSize)
-		, m_ServerAddress(k_StartingBufSize)
-		, m_Port(k_StartingBufSize)
+		, m_Username(k_StartingBufSize, '\0')
+		, m_ServerAddress(k_StartingBufSize, '\0')
+		, m_Port(k_StartingBufSize, '\0')
 		, m_UsernameHint("Enter username")
 		, m_ServerAddressHint("Enter server address")
 		, m_PortHint("Enter a port")
@@ -25,32 +25,33 @@ namespace core::ui
 		ImGui::BeginChild("BootLayout");
 
 		static float inputBoxWidth = 0;
+		float cursorXOffset = (ImGui::GetWindowSize().x - inputBoxWidth);
 
-		ImGui::SetCursorPosX((ImGui::GetMainViewport()->Size.x - inputBoxWidth) / 2);
+		ImGui::SetCursorPosX(cursorXOffset / 2);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + k_CursorOffset);
 		if (utils::ShowInputBox("##serveraddr", m_ServerAddressHint, m_ServerAddress, 
-			ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_AlwaysOverwrite))
+			ImGuiInputTextFlags_EnterReturnsTrue))
 		{
 			onEnter();
 		}
 		ImGui::Spacing();
-		ImGui::SetCursorPosX((ImGui::GetMainViewport()->Size.x - inputBoxWidth) / 2);
+		ImGui::SetCursorPosX(cursorXOffset / 2);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + k_CursorOffset);
 		if (utils::ShowInputBox("##port", m_PortHint, m_Port,
-			ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_AlwaysOverwrite))
+			ImGuiInputTextFlags_EnterReturnsTrue))
 		{
 			onEnter();
 		}
 		ImGui::Spacing();
-		ImGui::SetCursorPosX((ImGui::GetMainViewport()->Size.x - inputBoxWidth) / 2);
+		ImGui::SetCursorPosX(cursorXOffset / 2);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + k_CursorOffset);
 		if (utils::ShowInputBox("##username", m_UsernameHint, m_Username, 
-			ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_AlwaysOverwrite))
+			ImGuiInputTextFlags_EnterReturnsTrue))
 		{
 			onEnter();
 		}
-
 		inputBoxWidth = ImGui::GetItemRectSize().x;
+
 
 		ImGui::EndChild();
 	}
@@ -62,7 +63,7 @@ namespace core::ui
 	void BootLayout::onEnter()
 	{
 		bool retry = false;
-		if (m_ServerAddress.empty() || m_Username.empty() || m_Port.empty())
+		if (m_ServerAddress[0] == '\0' || m_Username[0] == '\0' || m_Port[0] == '\0')
 		{
 			retry = true;
 			m_ServerAddressHint = "Enter a valid address";

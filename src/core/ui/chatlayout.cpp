@@ -34,7 +34,7 @@ namespace core::ui
 
 		ImGui::SetCursorPosY(m_Height - paddingSize);
 		if (utils::ShowInputBox("##messagein", "Write something", m_MessageInput, 
-			ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_AlwaysOverwrite))
+			ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AllowTabInput))
 		{
 			onMessagePosted();
 			if (!ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
