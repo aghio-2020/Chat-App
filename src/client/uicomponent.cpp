@@ -53,12 +53,12 @@ void UIComponent::init()
 		}
 	);
 	m_AppGui.getRelay().onServerChosen.subscribe(
-		[this](std::string const& serverAddress, std::string const& username)
+		[this](std::string const& serverAddress, std::string const& port, std::string const& username)
 		{
 			core::events::ServerChosen event;
 			m_UserData.currServerAddress = event.address = serverAddress;
 			m_UserData.username = event.username = username;
-			event.port = "6969";
+			event.port = port;
 
 			m_Broadcaster->pushEvent(event);
 		}
