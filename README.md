@@ -20,3 +20,4 @@ connect entering a ip address to the server, or run one locally and connect with
 - make server bind to lan ip address by default and make cmd args to choose where to bind, including localhost as option
 - make input box automatically set cursor to it after a message was sent
 - organize events and messages declarations/definitions into their own files
+- decouple UI implementation as an MVC
