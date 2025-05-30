@@ -13,13 +13,12 @@ namespace core::ui
 	class ParticipantsLayout : public UILayout
 	{
 	public:
-		ParticipantsLayout(events::EventRelay<events::GUIEvents>& eventRelay, std::vector<utils::HostInfo>& participants);
+		ParticipantsLayout(std::vector<utils::HostInfo>& participants);
 
 		void update() override;
 		void setLayoutSize(float width, float height) override;
 
 	private:
-		events::EventRelay<events::GUIEvents>& m_EventRelay;
 		std::vector<utils::HostInfo>& m_Participants;
 
 		float m_Width = 0;

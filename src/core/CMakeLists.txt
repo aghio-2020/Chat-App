@@ -4,7 +4,10 @@ project(core)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+
 set(PKG_DIR "${CMAKE_SOURCE_DIR}/packages")
+# so find_package will look into my packages folder as well
+set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${PKG_DIR}/boost")
 
 set(JSON_INCLUDES "${PKG_DIR}/json/include")
 set(IMGUI_DIR "${PKG_DIR}/imgui")
