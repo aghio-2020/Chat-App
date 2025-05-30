@@ -18,7 +18,7 @@ namespace core::ui
         : m_Renderer(appName)
         , m_BootLayout(static_cast<events::EventRelay<events::GUIEvents>&>(*this))
         , m_ChatLayout(static_cast<events::EventRelay<events::GUIEvents>&>(*this), m_ChatMessages)
-        , m_ParticipantsLayout(static_cast<events::EventRelay<events::GUIEvents>&>(*this), m_Participants)
+        , m_ParticipantsLayout(m_Participants)
     {
     }
 
