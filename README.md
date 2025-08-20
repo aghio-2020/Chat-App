@@ -25,6 +25,4 @@ just including the repos in the packages directory should do. Boost should work 
 - move out of boost and use asio separately
 - add more thread safety around callbacks and shared data
 - make server bind to lan ip address by default and make cmd args to choose where to bind, including localhost as option
-- make input box automatically set cursor to it after a message was sent
-- organize events and messages declarations/definitions into their own files
 - decouple UI implementation as an MVC
