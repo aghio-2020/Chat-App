@@ -19,10 +19,3 @@ to build you need:
 
 just including the repos in the packages directory should do. Boost should work if it is in the system default dir (e.g. C:/boost for windows) so if thats the case, feel free to avoid having to copy it on the packages dir
   
-<h3>Next steps</h3>
-
-- add fetch contents to cmake for packages
-- move out of boost and use asio separately
-- add more thread safety around callbacks and shared data
-- make server bind to lan ip address by default and make cmd args to choose where to bind, including localhost as option
-- decouple UI implementation as an MVC
